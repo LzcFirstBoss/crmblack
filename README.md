@@ -1,64 +1,60 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# 📌 CRM Zabulon – Sistema de Atendimento com WhatsApp + Painel Kanban
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 💡 Visão Geral
 
-## About Laravel
+O **CRM Zabulon** é um sistema de atendimento e organização de contatos via WhatsApp, com foco em **clínicas, empresas e atendimento ao público**. Ele tem como principal objetivo facilitar o controle de mensagens recebidas, identificar os clientes ativos e organizar o atendimento com **status visuais no estilo Kanban**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+As mensagens chegam via **API da Evolution** (integrada ao WhatsApp) e são armazenadas automaticamente no sistema. O painel Kanban exibe as conversas organizadas por status (ex: Aguardando, Bot, Em Atendimento), possibilitando o controle eficiente da fila.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## ✅ Funcionalidades já implementadas
 
-## Learning Laravel
+- [x] Recebimento de mensagens via **Webhook** vindo do **n8n**
+- [x] Salvamento de mensagens no banco com:
+  - Número do cliente
+  - Tipo de mensagem (texto, imagem, áudio, vídeo)
+  - Data e hora de envio
+  - Indicação se foi enviada pelo bot
+  - Base64 convertida em arquivo físico (imagem/áudio/vídeo)
+- [x] Ignora mensagens desnecessárias (reactions, stickers, etc.)
+- [x] Painel Kanban responsivo com as últimas mensagens de cada número
+- [x] Sistema de **drag and drop** para organizar os cards por status
+- [x] Criação e exclusão de novos status dinâmicos
+- [x] Atualização automática do Kanban a cada 5 segundos
+- [x] Banco de dados em **PostgreSQL** hospedado no **Supabase**
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠️ Tecnologias e ferramentas utilizadas
 
-## Laravel Sponsors
+- **Laravel** (PHP)
+- **Blade** (Frontend com HTML/CSS)
+- **SortableJS** (arrastar e soltar os cards)
+- **TailwindCSS** (estilização leve e rápida)
+- **n8n** (para orquestrar as automações e conexão com a Evolution API)
+- **Supabase PostgreSQL** (banco de dados)
+- **Laragon** (ambiente local)
+- **Postman** (testes manuais de API)
+- **Ngrok** (exposição de webhook em ambiente local)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+---
 
-### Premium Partners
+## 🗂️ Estrutura atual
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚧 Próximos passos (futuros)
 
-## Code of Conduct
+- [ ] Adicionar visualização de histórico por número (modal ou página nova)
+- [ ] Implementar sistema de **tempo real com Laravel Echo**
+- [ ] Autenticação multiusuário
+- [ ] Painel de chat manual (responder direto do CRM)
+- [ ] Registro de atendentes e atribuição por cliente
+- [ ] Filtro por status/data/perfil
+- [ ] Logs de interação e auditoria
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+> Qualquer dúvida ou ideia para melhoria, é só chamar. 🚀
