@@ -55,6 +55,3 @@ As mensagens chegam via **API da Evolution** (integrada ao WhatsApp) e são arma
 - [ ] Filtro por status/data/perfil
 - [ ] Logs de interação e auditoria
 
----
-
-> Qualquer dúvida ou ideia para melhoria, é só chamar. 🚀
