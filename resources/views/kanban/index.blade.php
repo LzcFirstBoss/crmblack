@@ -1,5 +1,5 @@
-@extends('layouts.app')
-
+@extends('layouts.dashboard')
+<title>Zabulon - CRM</title>
 @section('content')
 <div class="p-6">
     <h1 class="text-2xl font-bold mb-6">Painel Kanban</h1>
@@ -81,4 +81,4 @@
     reativarSortable();
     setInterval(carregarKanban, 5000);
 </script>
-
+@endsection
