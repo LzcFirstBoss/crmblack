@@ -13,7 +13,7 @@ Route::post('/login', [AuthController::class, 'login']);
 //rotas com proteção de login
 Route::middleware('auth')->group(function () {
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/dashboard', function () { return view('layouts.dashboard'); })->middleware('auth')->name('dashboard');
+    Route::get('/dashboard', function () { return view('user.index'); })->name('dashboard');
     Route::get('/kanban', [KanbanController::class, 'index'])->name('kanban.index');
     Route::post('/kanban/atualizar-status', [KanbanController::class, 'atualizarStatus'])->name('kanban.atualizar-status');
     Route::get('/kanban/parcial', [KanbanController::class, 'parcial'])->name('kanban.parcial');

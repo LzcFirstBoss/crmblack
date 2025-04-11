@@ -17,7 +17,7 @@
         <nav class="mt-4 space-y-1 px-4">
             <a href="{{ '/dashboard' }}" class="block px-3 py-2 rounded hover:bg-orange-600"><i class="bi bi-house"></i> Dashboard</a>
             <a href="" class="block px-3 py-2 rounded hover:bg-orange-600"><i class="bi bi-chat"></i> Conversas</a>
-            <a href="{{ '/kaban' }}" class="block px-3 py-2 rounded hover:bg-orange-600"><i class="bi bi-funnel"></i> CRM</a>
+            <a href="{{ '/kanban' }}" class="block px-3 py-2 rounded hover:bg-orange-600"><i class="bi bi-funnel"></i> CRM</a>
             <a href="#" class="block px-3 py-2 rounded hover:bg-orange-600"><i class="bi bi-calendar-week"></i> Calendário</a>
             <a href="{{ '/logout' }}" class="block px-3 py-2 rounded hover:bg-orange-600"><i class="bi bi-box-arrow-right"></i> Sair</a>
         </nav>
