@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Webhook\Mensagem;
 use Illuminate\Support\Facades\DB;
 use App\Models\Kanban\Status;
+use Illuminate\Support\Facades\http;
 
 class KanbanController extends Controller
 {
@@ -18,7 +19,7 @@ class KanbanController extends Controller
             ->groupBy('numero_cliente');
     
         $mensagens = Mensagem::whereIn('id', $sub->pluck('id'))
-            ->orderBy('created_at', 'desc')
+            ->orderBy('data_e_hora_envio', 'desc')
             ->get()
             ->groupBy('status_id');
     
@@ -50,7 +51,7 @@ class KanbanController extends Controller
             ->groupBy('numero_cliente');
     
         $mensagens = Mensagem::whereIn('id', $sub->pluck('id'))
-            ->orderBy('created_at', 'desc')
+            ->orderBy('data_e_hora_envio', 'desc')
             ->get()
             ->groupBy('status_id');
     
@@ -66,5 +67,19 @@ class KanbanController extends Controller
         $status->save();
 
         return response()->json(['status' => 'cor atualizada']);
+    }
+
+    public function historico($numero)
+    {
+        return view('kanban.historico', compact('numero'));
+    }
+    
+    public function atualizarHistorico($numero)
+    {
+        $mensagens = Mensagem::where('numero_cliente', $numero)
+            ->orderBy('data_e_hora_envio', 'asc')
+            ->get();
+    
+        return view('kanban._mensagens', compact('mensagens'));
     }
 }

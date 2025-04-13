@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Kanban\KanbanController;
 use App\Http\Controllers\Kanban\StatusController;
+use App\Http\Controllers\Kanban\EvolutionController;
 
 //rotas de login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -20,8 +21,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/kanban/status', [StatusController::class, 'store']);
     Route::delete('/kanban/status/{id}', [StatusController::class, 'destroy']);
     Route::put('/kanban/status/{id}/cor', [KanbanController::class, 'atualizarCor']);
+    // Página com o histórico completo de um número
+    Route::get('/kanban/historico/{numero}', [KanbanController::class, 'historico'])->name('kanban.historico');
+
+    // Atualização em tempo real via AJAX
+    Route::get('/kanban/historico/{numero}/atualizar', [KanbanController::class, 'atualizarHistorico']);
+
+    Route::post('/kanban/enviar-mensagem', [EvolutionController::class, 'enviarMensagem'])->name('kanban.enviar-mensagem');
+
 });
 
+
+Route::get('/teste-evolution', function () {
+    return view('teste.teste');
+});
 
 
 
