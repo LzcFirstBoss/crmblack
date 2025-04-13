@@ -19,15 +19,13 @@ CREATE TABLE mensagens (
 
 CREATE TABLE status (
     id SERIAL PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL,
-    cor VARCHAR(20), -- opcional (ex: bg-green-100)
+    nome VARCHAR(255) UNIQUE NOT NULL,
+    cor VARCHAR(7) DEFAULT '#ffffff',
+    fixo BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO status (nome, cor) VALUES
-('aguardando', 'bg-yellow-100'),
-('bot', 'bg-blue-100'),
-('atendimento', 'bg-green-100');
+
 
 

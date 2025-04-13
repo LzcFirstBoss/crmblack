@@ -14,14 +14,15 @@ class KanbanController extends Controller
     public function index()
     {
         $sub = Mensagem::select(DB::raw('MAX(id) as id'))
+            ->where('enviado_por_mim', false) // só mensagens de clientes
             ->groupBy('numero_cliente');
     
         $mensagens = Mensagem::whereIn('id', $sub->pluck('id'))
             ->orderBy('created_at', 'desc')
             ->get()
-            ->groupBy('status_id'); // agora usamos o status_id
+            ->groupBy('status_id');
     
-        $colunas = Status::orderBy('id')->get(); // pegamos os status do banco
+        $colunas = Status::orderBy('id')->get();
     
         return view('kanban.index', compact('mensagens', 'colunas'));
     }
@@ -45,6 +46,7 @@ class KanbanController extends Controller
     public function parcial()
     {
         $sub = Mensagem::select(DB::raw('MAX(id) as id'))
+            ->where('enviado_por_mim', false) // só mensagens de clientes
             ->groupBy('numero_cliente');
     
         $mensagens = Mensagem::whereIn('id', $sub->pluck('id'))
@@ -52,8 +54,17 @@ class KanbanController extends Controller
             ->get()
             ->groupBy('status_id');
     
-        $colunas = \App\Models\Kanban\Status::orderBy('id')->get();
+        $colunas = Status::orderBy('id')->get();
     
         return view('kanban._parcial', compact('mensagens', 'colunas'));
+    }
+
+    public function atualizarCor(Request $request, $id)
+    {
+        $status = Status::findOrFail($id);
+        $status->cor = $request->cor;
+        $status->save();
+
+        return response()->json(['status' => 'cor atualizada']);
     }
 }

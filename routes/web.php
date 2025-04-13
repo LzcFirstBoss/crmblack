@@ -6,12 +6,12 @@ use App\Http\Controllers\Kanban\KanbanController;
 use App\Http\Controllers\Kanban\StatusController;
 
 //rotas de login
-Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
 //rotas com proteção de login
 Route::middleware('auth')->group(function () {
+    Route::get('/', function() {return view('user.index');});
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', function () { return view('user.index'); })->name('dashboard');
     Route::get('/kanban', [KanbanController::class, 'index'])->name('kanban.index');
@@ -19,6 +19,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/kanban/parcial', [KanbanController::class, 'parcial'])->name('kanban.parcial');
     Route::post('/kanban/status', [StatusController::class, 'store']);
     Route::delete('/kanban/status/{id}', [StatusController::class, 'destroy']);
+    Route::put('/kanban/status/{id}/cor', [KanbanController::class, 'atualizarCor']);
 });
 
 

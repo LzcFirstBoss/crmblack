@@ -13,7 +13,7 @@ class Status extends Model
     protected $table = 'status';
 
     // Campos que podem ser preenchidos via create()
-    protected $fillable = ['nome', 'cor'];
+    protected $fillable = ['nome', 'cor', 'fixo'];
 
     // Relacionamento com mensagens (opcional, caso use futuramente)
     public function mensagens()
