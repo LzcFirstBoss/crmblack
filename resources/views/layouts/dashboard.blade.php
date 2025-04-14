@@ -6,6 +6,7 @@
     <title>Zabulon - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="icon" href="{{ asset('img/zabulon/logopretalaranja.svg') }}">
 </head>
 <body class="bg-gray-100 text-gray-900">
 <div class="flex h-screen overflow-hidden">

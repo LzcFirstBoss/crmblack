@@ -28,8 +28,6 @@ class KanbanController extends Controller
         return view('kanban.index', compact('mensagens', 'colunas'));
     }
 
-    
-
     public function atualizarStatus(Request $request)
     {
         $mensagem = Mensagem::find($request->id);
@@ -71,7 +69,27 @@ class KanbanController extends Controller
 
     public function historico($numero)
     {
-        return view('kanban.historico', compact('numero'));
+        // Busca a foto de perfil pela API da Evolution
+        $apiKey = env('EVOLUTION_API_KEY');
+        $instance = env('EVOLUTION_INSTANCE_ID');
+        $server = env('EVOLUTION_API_URL');
+
+        $fotoPerfil = null;
+        try {
+            $res = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'apikey' => $apiKey
+            ])->post("{$server}/chat/fetchProfilePictureUrl/{$instance}", [
+                'number' => $numero
+            ]);
+
+            $json = $res->json();
+            $fotoPerfil = $json['profilePictureUrl'] ?? null;
+        } catch (\Exception $e) {
+            $fotoPerfil = null; // fallback se der erro
+        }
+
+        return view('kanban.historico', compact('numero', 'fotoPerfil'));
     }
     
     public function atualizarHistorico($numero)

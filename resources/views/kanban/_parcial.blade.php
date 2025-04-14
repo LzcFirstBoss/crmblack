@@ -16,9 +16,7 @@
             @foreach ($mensagens[$coluna->id] ?? [] as $mensagem)
             <div class="p-3 bg-gray-100 rounded shadow text-sm cursor-move" data-id="{{ $mensagem->id }}">
                 <div class="font-bold text-xs text-gray-600 mb-1">
-                    <a href="{{ route('kanban.historico', $mensagem->numero_cliente) }}" class="hover:underline text-orange-600">
-                        {{ $mensagem->numero_cliente }}
-                    </a>
+                    <a href="{{ route('kanban.historico', $mensagem->numero_cliente) }}" class="hover:underline text-orange-600">{{ $mensagem->numero_cliente }} <i class="bi bi-arrow-right-circle"></i></a>
                 </div>
                 <div>{{ Str::limit($mensagem->mensagem_enviada, 100) }}</div>
                 <div class="text-right text-xs text-gray-400 mt-1">
