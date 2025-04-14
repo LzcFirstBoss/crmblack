@@ -77,8 +77,9 @@ class KanbanController extends Controller
     public function atualizarHistorico($numero)
     {
         $mensagens = Mensagem::where('numero_cliente', $numero)
-            ->orderBy('data_e_hora_envio', 'asc')
-            ->get();
+        ->with('usuario') // ← carrega o usuário vinculado à mensagem
+        ->orderBy('data_e_hora_envio', 'asc')
+        ->get();
     
         return view('kanban._mensagens', compact('mensagens'));
     }

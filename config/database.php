@@ -76,7 +76,11 @@ return [
             'prefix_indexes' => true,
             'schema' => 'public',
             'sslmode' => 'prefer',
+            'options' => extension_loaded('pdo_pgsql') ? array_filter([
+                PDO::ATTR_PERSISTENT => false, // ← Mantém APENAS aqui!
+            ]) : [],
         ],
+
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',

@@ -26,4 +26,9 @@ class Mensagem extends Model
         'data_e_hora_envio' => 'datetime',
         'enviado_por_mim' => 'boolean',
     ];
+
+    public function usuario()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'usuario_id');
+    }
 }

@@ -33,8 +33,8 @@
             </button>
             
             <div class="flex items-center space-x-3">
-                <span class="text-white font-medium">Olá, Lázaro</span>
-                <img src="https://ui-avatars.com/api/?name=Luyzo&background=orange&color=fff" class="w-8 h-8 rounded-full" alt="Avatar">
+                <span class="text-white font-medium">Olá, {{ auth()->user()->name }}</span>
+                <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}o&background=orange&color=fff" class="w-8 h-8 rounded-full" alt="Avatar">
             </div>
         </header>
 
