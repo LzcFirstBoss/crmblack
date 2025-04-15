@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Webhook\Mensagem;
 use App\Models\Cliente\Cliente;
-use Illuminate\Support\Facades\http;
+use Illuminate\Support\Facades\Http;
 
 
 class HistoricoConversaController extends Controller

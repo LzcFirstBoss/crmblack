@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Webhook\Mensagem;
 use Illuminate\Support\Facades\DB;
 use App\Models\Kanban\Status;
-use Illuminate\Support\Facades\http;
+use Illuminate\Support\Facades\Http;
 
 
 
