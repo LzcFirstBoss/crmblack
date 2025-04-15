@@ -5,7 +5,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Kanban\KanbanController;
 use App\Http\Controllers\Kanban\StatusController;
 use App\Http\Controllers\Kanban\EvolutionController;
-
+use App\Http\Controllers\Historico\HistoricoConversaController;
 
 //rotas de login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -32,15 +32,14 @@ Route::middleware('auth')->group(function(){
 Route::middleware('auth')->group(function(){
 
     // Página com o histórico completo de um número
-    Route::get('/kanban/historico/{numero}', [KanbanController::class, 'historico'])->name('kanban.historico');
+    Route::get('/kanban/historico/{numero}', [HistoricoConversaController::class, 'historico'])->name('kanban.historico');
 
     // Atualização em tempo real via AJAX
-    Route::get('/kanban/historico/{numero}/atualizar', [KanbanController::class, 'atualizarHistorico']);
+    Route::get('/kanban/historico/{numero}/atualizar', [HistoricoConversaController::class, 'atualizarHistorico']);
     Route::post('/kanban/enviar-mensagem', [EvolutionController::class, 'enviarMensagem'])->name('kanban.enviar-mensagem');
 
-    // Carregar Foto
-    Route::post('/kanban/foto-perfil', [KanbanController::class, 'fotoPerfil'])->name('kanban.fotoPerfil');
+    // Desativar/ativar bot
+    Route::get('/cliente/bot/alternar', [HistoricoConversaController::class, 'alternar'])->name('cliente.alternarBot');
 });
-
 
 

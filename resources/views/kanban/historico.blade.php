@@ -7,19 +7,22 @@
     <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
         <h2 class="text-2xl font-bold text-[#FE7F32] flex items-center gap-2">
             <div class="flex items-center gap-3 mb-4">
-                <img src="{{ $fotoPerfil ?? asset('img/user-default.png') }}"
-                alt="Foto de perfil"
-                onerror="this.onerror=null;this.src='{{ asset('img/default/user.png') }}';"
-                class="w-12 h-12 rounded-full border shadow object-cover">
+                <img src="{{ $fotoPerfil ?? asset('img/user-default.png') }}" alt="Foto de perfil" onerror="this.onerror=null;this.src='{{ asset('img/default/user.png') }}';" class="w-12 h-12 rounded-full border shadow object-cover">
                 <div>
                     <h2 class="text-lg font-semibold">Conversa com {{ $numero }}</h2>
                 </div>
             </div>
         </h2>
         <div class="flex gap-2">
-            <button class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow flex items-center gap-2">
-                <i class="bi bi-power"></i> Desligar Bot
-            </button>
+            @php
+            $numeroLimpo = preg_replace('/[^0-9]/', '', $numero);
+        @endphp
+        
+        <a href="{{ route('cliente.alternarBot', ['numero' => $numeroLimpo]) }}"
+           class="px-4 py-2 {{ $cliente->botativo ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }} text-white rounded-lg shadow flex items-center gap-2">
+            <i class="bi bi-power"></i> {{ $cliente->botativo ? 'Desligar Bot' : 'Ligar Bot' }}
+        </a>
+        
             <a href="{{ route('kanban.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg shadow flex items-center gap-2">
                 <i class="bi bi-arrow-left"></i> Voltar
             </a>
@@ -109,7 +112,7 @@
 
     carregarMensagens();
     setInterval(carregarMensagens, 1500);
-    
+
 window.togglePlay = function (btn) {
     const container = btn.closest('div');
     const audio = container.querySelector('.audio-player');
