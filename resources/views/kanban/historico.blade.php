@@ -1,4 +1,5 @@
 @extends('layouts.dashboard')
+<title>Zabulon {{ $numero }}</title>
 @section('content')
 
 <div class="p-6">
@@ -108,11 +109,7 @@
 
     carregarMensagens();
     setInterval(carregarMensagens, 1500);
-</script>
-
-
-
-    <script>
+    
 window.togglePlay = function (btn) {
     const container = btn.closest('div');
     const audio = container.querySelector('.audio-player');

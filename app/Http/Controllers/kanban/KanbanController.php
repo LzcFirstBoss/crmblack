@@ -9,13 +9,15 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Kanban\Status;
 use Illuminate\Support\Facades\http;
 
+
+
 class KanbanController extends Controller
 {
 
     public function index()
     {
         $sub = Mensagem::select(DB::raw('MAX(id) as id'))
-            ->where('enviado_por_mim', false) // só mensagens de clientes
+            ->where('enviado_por_mim', false) // carregar só a ultima mensagens de clientes
             ->groupBy('numero_cliente');
     
         $mensagens = Mensagem::whereIn('id', $sub->pluck('id'))
