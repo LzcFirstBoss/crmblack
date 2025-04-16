@@ -77,7 +77,7 @@ return [
             'schema' => 'public',
             'sslmode' => 'prefer',
             'options' => extension_loaded('pdo_pgsql') ? array_filter([
-                PDO::ATTR_PERSISTENT => false, // ← Mantém APENAS aqui!
+                PDO::ATTR_PERSISTENT => false, // Manter conexão direta modo produção comi o cu de quem ta lendo
             ]) : [],
         ],
 

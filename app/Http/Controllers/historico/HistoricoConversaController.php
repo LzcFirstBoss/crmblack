@@ -43,7 +43,7 @@ class HistoricoConversaController extends Controller
     public function atualizarHistorico($numero)
     {
         $mensagens = Mensagem::where('numero_cliente', $numero)
-        ->with('usuario') // ← carrega o usuário vinculado à mensagem
+        ->with('usuario') // carrega o usuário vinculado à mensagem
         ->orderBy('data_e_hora_envio', 'asc')
         ->get();
     
