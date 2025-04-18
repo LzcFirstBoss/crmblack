@@ -26,6 +26,16 @@ CREATE TABLE status (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE evolutions (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,                        -- Nome amigável da instância
+    instancia_id VARCHAR(255) UNIQUE NOT NULL,         -- ID usado na Evolution
+    status_conexao VARCHAR(50) DEFAULT 'DISCONNECTED', -- Pode ser CONNECTED, QRCODE, TIMEOUT, etc
+    telefone VARCHAR(20),                              -- Número conectado, se aplicável
+    botativo BOOLEAN DEFAULT FALSE,                    -- Se o bot está ativo nessa instância
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 
 

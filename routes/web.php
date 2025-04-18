@@ -42,4 +42,10 @@
         Route::get('/cliente/bot/alternar', [HistoricoConversaController::class, 'alternar'])->name('cliente.alternarBot');
     });
 
-
+    Route::middleware('auth')->group(function(){
+        Route::get('/config', [EvolutionController::class, 'painelWhatsapp'])->name('evolution.qrcpde');
+        Route::get('/evolution/conectar', [EvolutionController::class, 'conectarInstancia'])->name('evolution.conectar');
+        Route::get('/evolution/status', [EvolutionController::class, 'verificarStatus'])->name('evolution.status.check');
+        Route::get('/painel/whatsapp', [EvolutionController::class, 'painelWhatsapp'])->name('painel.whatsapp');
+        Route::post('/evolution/logout', [EvolutionController::class, 'logout'])->name('evolution.logout');
+    });

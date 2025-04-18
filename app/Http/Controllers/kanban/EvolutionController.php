@@ -3,74 +3,124 @@
 namespace App\Http\Controllers\Kanban;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Webhook\Mensagem;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class EvolutionController extends Controller
-{
-    public function enviarMensagem(Request $request)
+{    
+    public function conectarInstancia()
     {
-        $numero = $request->input('numero');
-        $mensagem = trim($request->input('mensagem'));
-
-        if (!$numero || !$mensagem) {
-            return response()->json(['erro' => 'Número ou mensagem inválida'], 400);
+        $apiUrl = env('EVOLUTION_API_URL');
+        $apiKey = env('EVOLUTION_API_KEY');
+        $instancia = env('EVOLUTION_INSTANCE_ID');
+    
+        // 1. Conectar (gerar QR)
+        $connect = Http::withHeaders([
+            'apikey' => $apiKey
+        ])->get("{$apiUrl}/instance/connect/{$instancia}");
+    
+        if (!$connect->successful()) {
+            return response()->json(['erro' => true, 'mensagem' => 'Erro ao gerar QR Code.']);
         }
-
-        $instance = env('EVOLUTION_INSTANCE_ID');
-        $apiKey   = env('EVOLUTION_API_KEY');
-        $server   = env('EVOLUTION_API_URL');
-
-        $url = "{$server}/message/sendText/{$instance}";
-
-        $payload = [
-            'number' => $numero,
-            'text'   => $mensagem
-        ];
-
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                "apikey: {$apiKey}",
-            ],
-            CURLOPT_POSTFIELDS => json_encode($payload),
-        ]);
-
-        $response = curl_exec($curl);
-        $erro = curl_error($curl);
-        curl_close($curl);
-
-        if ($erro) {
-            return response()->json(['erro' => 'Erro ao conectar com a API: ' . $erro], 500);
-        }
-
-        $resposta = json_decode($response, true);
-
-        if (isset($resposta['status']) && $resposta['status'] === 400) {
-            return response()->json([
-                'erro' => 'Erro da Evolution: ' . json_encode($resposta['response']['message'][0][0] ?? 'Erro desconhecido')
-            ], 400);
-        }
-
-        // Salva no banco se a resposta foi 200 (OK)
-        Mensagem::create([
-            'numero_cliente' => $numero,
-            'tipo_de_mensagem' => 'conversation',
-            'mensagem_enviada' => $mensagem,
-            'data_e_hora_envio' => now(),
-            'enviado_por_mim' => true,
-            'usuario_id' => auth()->id(), // se quiser associar com usuário logado, usar: auth()->id()
-            'bot' => false,
-        ]);
-
+    
         return response()->json([
-            'status' => 'Mensagem enviada com sucesso',
-            'retorno' => $resposta
+            'status' => 'AGUARDANDO',
+            'base64' => $connect['base64'],
+            'code' => $connect['code']
         ]);
     }
+    
+    
+    public function verificarStatus()
+    {
+        $apiUrl = env('EVOLUTION_API_URL');
+        $apiKey = env('EVOLUTION_API_KEY');
+        $instancia = env('EVOLUTION_INSTANCE_ID');
+    
+        $resposta = Http::withHeaders([
+            'apikey' => $apiKey
+        ])->get("{$apiUrl}/instance/connectionState/{$instancia}");
+    
+        if (!$resposta->successful()) {
+            return response()->json(['erro' => true, 'mensagem' => 'Erro ao consultar conexão.']);
+        }
+    
+        $estado = $resposta['instance']['state'];
+        $estadoAtual = $estado === 'open' ? 'CONNECTED' : 'DISCONNECTED';
+        $botativo = $estado === 'open';
+    
+        DB::table('evolutions')->where('instancia_id', $instancia)->update([
+            'status_conexao' => $estadoAtual,
+            'botativo' => $botativo,
+            'updated_at' => now()
+        ]);
+    
+        return response()->json([
+            'status' => $estadoAtual
+        ]);
+    }    
+    
+    
+    public function painelWhatsapp()
+    {
+        $instanciaId = env('EVOLUTION_INSTANCE_ID');
+        $apiUrl = env('EVOLUTION_API_URL');
+        $apiKey = env('EVOLUTION_API_KEY');
+    
+        $estadoAtual = 'DISCONNECTED';
+    
+        $resposta = Http::withHeaders([
+            'apikey' => $apiKey
+        ])->get("{$apiUrl}/instance/connectionState/{$instanciaId}");
+    
+        if ($resposta->successful() && ($resposta['instance']['state'] ?? '') === 'open') {
+            $estadoAtual = 'CONNECTED';
+        }
+    
+        // Atualiza o banco apenas com status de conexão
+        DB::table('evolutions')->where('instancia_id', $instanciaId)->update([
+            'status_conexao' => $estadoAtual,
+            'updated_at' => now()
+        ]);
+    
+        // Recupera instância atualizada para exibir na view
+        $instancia = DB::table('evolutions')->where('instancia_id', $instanciaId)->first();
+    
+        return view('evolution.config', [
+            'instancia' => $instancia
+        ]);
+    }
+    
+    
+
+    public function logout(Request $request)
+    {
+        $apiUrl = env('EVOLUTION_API_URL');
+        $apiKey = env('EVOLUTION_API_KEY');
+        $instancia = env('EVOLUTION_INSTANCE_ID');
+    
+        $resposta = Http::withHeaders([
+            'apikey' => $apiKey
+        ])->withOptions([
+            'http_errors' => false
+        ])->delete("{$apiUrl}/instance/logout/{$instancia}");
+    
+        $statusCode = $resposta->status();
+        $body = $resposta->json();
+    
+        // Atualiza status no banco se for sucesso
+        if ($resposta->ok() && ($body['status'] ?? '') === 'SUCCESS') {
+            DB::table('evolutions')
+                ->where('instancia_id', $instancia)
+                ->update([
+                    'status_conexao' => 'DISCONNECTED',
+                    'updated_at' => now()
+                ]);
+        }
+    
+        return response()->json($body, $statusCode);
+    }    
 }
