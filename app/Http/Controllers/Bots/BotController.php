@@ -58,4 +58,41 @@ class BotController extends Controller
     
         return redirect()->back()->with('success', 'Bot movido para a lixeira com sucesso!');
     }
+
+    public function update(Request $request, $id)
+{
+    $bot = Bot::findOrFail($id);
+
+    $request->validate([
+        'nome' => 'required|string|max:255',
+        'descricao' => 'required|string|max:300',
+        'prompt' => 'required|string',
+        'funcoes' => 'array',
+    ]);
+
+    $funcoesAtivas = $request->input('funcoes', []);
+    $promptBase = $request->input('prompt');
+
+    // Junta todos os prompts das funções ativas
+    $promptFuncoes = FuncoesBot::whereIn('id', $funcoesAtivas)->pluck('prompt')->implode("\n\n");
+
+    // Atualiza todos os bots para inativo se esse for ativo
+    if ($request->has('ativo')) {
+        Bot::where('id', '!=', $bot->id)->update(['ativo' => false]);
+        $bot->ativo = true;
+    } else {
+        $bot->ativo = false;
+    }
+
+    // Atualiza os campos
+    $bot->nome = $request->nome;
+    $bot->descricao = $request->descricao;
+    $bot->prompt = $promptBase . "\n\n" . $promptFuncoes;
+    $bot->funcoes = $funcoesAtivas;
+
+    $bot->save();
+
+    return redirect()->back()->with('success', 'Bot atualizado com sucesso!');
+}
+
 }

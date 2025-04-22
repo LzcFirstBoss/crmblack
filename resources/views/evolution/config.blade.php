@@ -87,9 +87,10 @@
                             class="bg-white border rounded-lg shadow p-5 flex flex-col justify-between hover:shadow-lg transition">
                             <div class="mb-2">
                                 <h3
-                                    class="text-lg font-bold flex items-center gap-2 {{ $bot->ativo ? 'text-green-500' : 'text-gray-800' }}">
-                                    <i class="bi bi-robot"></i> {{ $bot->nome }}
-                                </h3>
+                                class="text-base font-bold flex items-start gap-2 break-words leading-tight {{ $bot->ativo ? 'text-green-500' : 'text-gray-800' }}">
+                                <i class="bi bi-robot flex-shrink-0 mt-1"></i>
+                                <span class="break-words max-w-full">{{ $bot->nome }}</span>
+                            </h3>
                             </div>
 
                             <p class="text-sm text-gray-600">
@@ -97,9 +98,19 @@
                             </p>
 
                             <div class="flex justify-between items-center mt-5">
-                                <a href="#" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+                                <button type="button"
+                                    @click="$store.editorBot.abrir({
+                                    id: {{ $bot->id }},
+                                    nome: @js($bot->nome),
+                                    descricao: @js($bot->descricao),
+                                    prompt: @js($bot->prompt),
+                                    ativo: {{ $bot->ativo ? 'true' : 'false' }},
+                                    funcoes: @js($bot->funcoes ?? [])
+                                })"
+                                    class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
                                     <i class="bi bi-pencil-square"></i> Editar
-                                </a>
+                                </button>
+
                                 @if (!$bot->ativo)
                                     <form action="{{ route('bots.destroy', $bot->id) }}" method="POST"
                                         @submit.prevent="
@@ -218,6 +229,8 @@
             </div>
         </div>
 
+
+
         <script>
             let statusInterval = null;
 
@@ -323,6 +336,132 @@
                     });
             });
         </script>
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('editorBot', {
+                    open: false,
+                    botId: null,
+                    botNome: '',
+                    botDescricao: '',
+                    botPrompt: '',
+                    botAtivo: false,
+                    botFuncoes: [],
+
+                    abrir(bot) {
+                        this.botId = bot.id;
+                        this.botNome = bot.nome;
+                        this.botDescricao = bot.descricao;
+                        this.botPrompt = bot.prompt;
+                        this.botAtivo = bot.ativo;
+                        this.botFuncoes = bot.funcoes || [];
+                        this.open = true;
+                    }
+                });
+            });
+        </script>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     @endsection
+    <div x-data x-show="$store.editorBot.open" x-transition
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div @click.away="$store.editorBot.open = false"
+            class="bg-white w-full max-w-2xl p-6 rounded-lg shadow space-y-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">
+                    <i class="bi bi-robot text-blue-600"></i> Editar Agente
+                </h2>
+                <button @click="$store.editorBot.open = false" class="text-gray-500 hover:text-red-600">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <form x-data="{ loading: false }" @submit="loading = true" :action="`/bots/update/${$store.editorBot.botId}`"
+                method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="flex items-center justify-between">
+                    <label class="text-sm font-medium text-gray-700">Agente Ativo</label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="ativo" class="sr-only" x-model="$store.editorBot.botAtivo">
+                        <div class="w-11 h-6 bg-gray-300 rounded-full relative transition-colors duration-300"
+                            :class="{ 'bg-green-500': $store.editorBot.botAtivo }">
+                            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
+                                :class="{ 'translate-x-5': $store.editorBot.botAtivo }"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium">Nome</label>
+                    <input type="text" name="nome" x-model="$store.editorBot.botNome"
+                        class="w-full mt-1 border rounded p-2 text-sm" required>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium">Descrição</label>
+                    <textarea name="descricao" maxlength="300" x-model="$store.editorBot.botDescricao"
+                        class="w-full mt-1 border rounded p-2 text-sm resize-y min-h-[80px] max-h-[100px]" required></textarea>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium">Prompt</label>
+                    <textarea name="prompt" x-model="$store.editorBot.botPrompt"
+                        class="w-full mt-1 border rounded p-2 text-sm resize-y min-h-[150px] max-h-[400px]" required></textarea>
+                </div>
+
+                <div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Funções Disponíveis</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-60 overflow-y-auto border rounded p-4">
+                            @foreach ($funcoes as $funcao)
+                                @php $id = (string) $funcao->id; @endphp
+                                <div class="flex items-start justify-between gap-3 border-b pb-3">
+                                    <div class="text-sm">
+                                        <strong>{{ $funcao->nome }}</strong><br>
+                                        <span class="text-gray-500 text-xs">{{ $funcao->descricao }}</span>
+                                    </div>
+
+                                    <!-- Switch funcional com x-model no array -->
+                                    <label class="inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only" :value="'{{ $id }}'"
+                                            x-model="$store.editorBot.botFuncoes" name="funcoes[]">
+
+                                        <!-- Toggle visual -->
+                                        <div class="w-11 h-6 bg-gray-300 rounded-full relative transition-colors duration-300"
+                                            :class="{
+                                                'bg-green-500': $store.editorBot.botFuncoes.includes(
+                                                    '{{ $id }}')
+                                            }">
+                                            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
+                                                :class="{
+                                                    'translate-x-5': $store.editorBot.botFuncoes.includes(
+                                                        '{{ $id }}')
+                                                }">
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="flex justify-end mt-6">
+                    <button type="submit" :disabled="loading"
+                        class="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded text-sm flex items-center gap-2">
+                        <template x-if="!loading">
+                            <span><i class="bi bi-save"></i> Salvar Alterações</span>
+                        </template>
+                        <template x-if="loading">
+                            <span class="flex items-center gap-2">
+                                <i class="bi bi-arrow-repeat animate-spin"></i> Salvando...
+                            </span>
+                        </template>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>

@@ -57,4 +57,12 @@
         Route::post('/bots/store', [BotController::class, 'store'])->name('bots.store');
         // Deletar bots
         Route::delete('/bots/{id}', [BotController::class, 'destroy'])->name('bots.destroy');
+
+        Route::put('/bots/update/{id}', [BotController::class, 'update'])->name('bots.update');
+    });
+
+    // Calendario/agenada
+
+    Route::middleware('auth')->group(function(){
+        Route::get('/calendario', function() {return view('calendario.index');});
     });
