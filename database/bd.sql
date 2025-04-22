@@ -37,5 +37,28 @@ CREATE TABLE evolutions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE funcoes_bot (
+    id BIGSERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    prompt TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE bots (
+    id BIGSERIAL PRIMARY KEY,
+    id_user BIGINT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    prompt TEXT NOT NULL,
+    funcoes JSON,
+    ativo BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE
+);
+
 
 

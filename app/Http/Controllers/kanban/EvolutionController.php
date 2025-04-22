@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Bot\Bot;
+use App\Models\Bot\FuncoesBot;
 
 
 class EvolutionController extends Controller
@@ -69,6 +71,7 @@ class EvolutionController extends Controller
         $instanciaId = env('EVOLUTION_INSTANCE_ID');
         $apiUrl = env('EVOLUTION_API_URL');
         $apiKey = env('EVOLUTION_API_KEY');
+        $userId = auth()->id();
     
         $estadoAtual = 'DISCONNECTED';
     
@@ -80,17 +83,23 @@ class EvolutionController extends Controller
             $estadoAtual = 'CONNECTED';
         }
     
-        // Atualiza o banco apenas com status de conexão
+        // Atualiza o status no banco
         DB::table('evolutions')->where('instancia_id', $instanciaId)->update([
             'status_conexao' => $estadoAtual,
             'updated_at' => now()
         ]);
     
-        // Recupera instância atualizada para exibir na view
+        // Pega dados atualizados da instância
         $instancia = DB::table('evolutions')->where('instancia_id', $instanciaId)->first();
     
+        $bots = Bot::where('lixeira', false)->get();
+        $funcoes = FuncoesBot::all();
+    
+        // Manda tudo pra view
         return view('evolution.config', [
-            'instancia' => $instancia
+            'instancia' => $instancia,
+            'bots' => $bots,
+            'funcoes' => $funcoes
         ]);
     }
     

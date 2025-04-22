@@ -6,6 +6,7 @@
     use App\Http\Controllers\Kanban\StatusController;
     use App\Http\Controllers\Kanban\EvolutionController;
     use App\Http\Controllers\Historico\HistoricoConversaController;
+    use App\Http\Controllers\Bots\BotController;
 
     //rotas de login
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -42,10 +43,18 @@
         Route::get('/cliente/bot/alternar', [HistoricoConversaController::class, 'alternar'])->name('cliente.alternarBot');
     });
 
+    // configs whatsapp
     Route::middleware('auth')->group(function(){
+
+        //conectar/desconectar
         Route::get('/config', [EvolutionController::class, 'painelWhatsapp'])->name('evolution.qrcpde');
         Route::get('/evolution/conectar', [EvolutionController::class, 'conectarInstancia'])->name('evolution.conectar');
         Route::get('/evolution/status', [EvolutionController::class, 'verificarStatus'])->name('evolution.status.check');
         Route::get('/painel/whatsapp', [EvolutionController::class, 'painelWhatsapp'])->name('painel.whatsapp');
         Route::post('/evolution/logout', [EvolutionController::class, 'logout'])->name('evolution.logout');
+
+        //criar bots
+        Route::post('/bots/store', [BotController::class, 'store'])->name('bots.store');
+        // Deletar bots
+        Route::delete('/bots/{id}', [BotController::class, 'destroy'])->name('bots.destroy');
     });
