@@ -14,25 +14,53 @@
 <body class="bg-gray-100 text-gray-900">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside id="sidebar" class="bg-black text-white transition-all duration-300 ease-in-out w-64 overflow-hidden">
-            <div class="p-4">
-                <img src="{{ asset('img/zabulon/logobrancalaranja.svg') }}" alt="Logo Zabulon" class="h-12 mx-auto">
+        <aside id="sidebar"
+            class="bg-[#1F1F1F] text-white transition-all duration-300 ease-in-out w-64 overflow-y-auto shadow-xl flex flex-col justify-between">
+            <!-- Topo / Logo e navegação -->
+            <div>
+                <div class="p-6 flex justify-center">
+                    <img src="{{ asset('img/zabulon/logobrancalaranja.svg') }}" alt="Logo Zabulon"
+                        class="h-12 hover:scale-105 transition-transform duration-300">
+                </div>
+                <div class="px-6 text-xs text-gray-400 uppercase tracking-widest mb-2">Navegação</div>
+                <nav class="space-y-1 px-4 text-sm font-medium">
+                    <a href="{{ url('/dashboard') }}"
+                        class="flex items-center gap-3 px-3 py-2 rounded transition 
+                       {{ request()->is('dashboard') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
+                        <i class="bi bi-house text-lg"></i> Dashboard
+                    </a>
+                    <a href="#"
+                        class="flex items-center gap-3 px-3 py-2 rounded transition 
+                       {{ request()->is('conversas') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
+                        <i class="bi bi-chat text-lg"></i> Conversas
+                    </a>
+                    <a href="{{ url('/kanban') }}"
+                        class="flex items-center gap-3 px-3 py-2 rounded transition 
+                       {{ request()->is('kanban') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
+                        <i class="bi bi-funnel text-lg"></i> CRM
+                    </a>
+                    <a href="#"
+                        class="flex items-center gap-3 px-3 py-2 rounded transition 
+                       {{ request()->is('calendario') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
+                        <i class="bi bi-calendar-week text-lg"></i> Calendário
+                    </a>
+                    <a href="{{ url('/config') }}"
+                        class="flex items-center gap-3 px-3 py-2 rounded transition 
+                       {{ request()->is('config') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
+                        <i class="bi bi-whatsapp text-lg"></i> Configurações
+                    </a>
+                </nav>
             </div>
-            <nav class="mt-4 space-y-1 px-4">
-                <a href="{{ '/dashboard' }}" class="block px-3 py-2 rounded hover:bg-orange-600"><i
-                        class="bi bi-house"></i> Dashboard</a>
-                <a href="" class="block px-3 py-2 rounded hover:bg-orange-600"><i class="bi bi-chat"></i>
-                    Conversas</a>
-                <a href="{{ '/kanban' }}" class="block px-3 py-2 rounded hover:bg-orange-600"><i
-                        class="bi bi-funnel"></i> CRM</a>
-                <a href="#" class="block px-3 py-2 rounded hover:bg-orange-600"><i
-                        class="bi bi-calendar-week"></i> Calendário</a>
-                <a href="{{ '/config' }}" class="block px-3 py-2 rounded hover:bg-orange-600"><i
-                        class="bi bi-whatsapp"></i> Configurações</a>
-                <a href="{{ '/logout' }}" class="block px-3 py-2 rounded hover:bg-orange-600"><i
-                        class="bi bi-box-arrow-right"></i> Sair</a>
-            </nav>
+
+            <!-- Rodapé / Botão sair -->
+            <div class="p-4 border-t border-gray-700">
+                <a href="{{ url('/logout') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded transition text-red-400 hover:bg-red-700 hover:text-white">
+                    <i class="bi bi-box-arrow-right text-lg"></i> Sair
+                </a>
+            </div>
         </aside>
+
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col">
@@ -44,11 +72,22 @@
                     <i class="bi bi-list text-2xl"></i>
                 </button>
 
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-4">
+                    <!-- Notificação -->
+                    <div class="relative">
+                        <button class="text-white hover:text-black">
+                            <i class="bi bi-bell text-2xl"></i>
+                        </button>
+                        <span class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
+                            0
+                        </span>
+                    </div>
+
                     <span class="text-white font-medium">Olá, {{ auth()->user()->name }}</span>
                     <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}o&background=orange&color=fff"
                         class="w-8 h-8 rounded-full" alt="Avatar">
                 </div>
+
             </header>
 
             <!-- Content Area -->
