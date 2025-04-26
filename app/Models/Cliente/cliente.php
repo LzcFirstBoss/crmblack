@@ -11,6 +11,7 @@ class Cliente extends Model
     protected $fillable = [
         'telefoneWhatsapp',
         'botativo',
+        'email',
     ];
 
     protected $casts = [

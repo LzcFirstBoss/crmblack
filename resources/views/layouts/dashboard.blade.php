@@ -39,7 +39,7 @@
                        {{ request()->is('kanban') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
                         <i class="bi bi-funnel text-lg"></i> CRM
                     </a>
-                    <a href="#"
+                    <a href="{{ url('/calendario') }}"
                         class="flex items-center gap-3 px-3 py-2 rounded transition 
                        {{ request()->is('calendario') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
                         <i class="bi bi-calendar-week text-lg"></i> Calendário
@@ -93,6 +93,9 @@
             <!-- Content Area -->
             <main class="flex-1 bg-grey overflow-y-auto p-6">
                 @yield('content')
+                @livewireStyles
+                
+                @livewireScripts
             </main>
         </div>
     </div>

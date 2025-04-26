@@ -7,6 +7,7 @@
     use App\Http\Controllers\Kanban\EvolutionController;
     use App\Http\Controllers\Historico\HistoricoConversaController;
     use App\Http\Controllers\Bots\BotController;
+    use App\Http\Controllers\Calendario\EventoController;
 
     //rotas de login
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -62,7 +63,17 @@
     });
 
     // Calendario/agenada
-
     Route::middleware('auth')->group(function(){
-        Route::get('/calendario', function() {return view('calendario.index');});
+
+        
+        Route::view('/calendario', 'calendario.index')->name('agenda.index');
+        Route::post('/eventos', [EventoController::class, 'store'])->name('eventos.store');
+    });
+
+    Route::get('/teste-env-direto', function () {
+        return response()->json([
+            'url' => env('EVOLUTION_API_URL'),
+            'key' => env('EVOLUTION_API_KEY'),
+            'id'  => env('EVOLUTION_INSTANCE_ID'),
+        ]);
     });

@@ -15,9 +15,9 @@ class EvolutionController extends Controller
 {    
     public function conectarInstancia()
     {
-        $apiUrl = env('EVOLUTION_API_URL');
-        $apiKey = env('EVOLUTION_API_KEY');
-        $instancia = env('EVOLUTION_INSTANCE_ID');
+        $apiUrl = config('services.evolution.url');
+        $apiKey = config('services.evolution.key');
+        $instancia  = config('services.evolution.id');
     
         // 1. Conectar (gerar QR)
         $connect = Http::withHeaders([

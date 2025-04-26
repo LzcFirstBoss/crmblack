@@ -12,7 +12,7 @@ class WebhookController extends Controller
     public function receberMensagem(Request $request)
     {
         // Validação do token
-        if ($request->header('apikey') !== env('apikey_secret')) {
+        if ($request->header('apikey') !== config('app.APIKEY_SECRET')) {
             return response()->json(['erro' => 'Não autorizado'], 401);
         }
 
