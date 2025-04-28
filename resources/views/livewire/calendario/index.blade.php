@@ -1,4 +1,4 @@
-<div class="w-full h-full">
+<div class="w-full h-full p-6">
     <div class="bg-white rounded-xl shadow-lg h-full flex flex-col overflow-hidden">
 
         <div class="flex justify-between items-center px-6 py-4" style="background-color: #1F1F1F; color: white;">

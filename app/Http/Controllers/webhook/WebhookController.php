@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Webhook\Mensagem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Cliente\Cliente;
 
 class WebhookController extends Controller
 {
     public function receberMensagem(Request $request)
     {
-        // Validação do token
         if ($request->header('apikey') !== config('app.APIKEY_SECRET')) {
             return response()->json(['erro' => 'Não autorizado'], 401);
         }
@@ -36,6 +36,26 @@ class WebhookController extends Controller
                 );
             }
 
+            // Incrementar qtd_mensagens_novas
+            if (
+                isset($mensagem['numero_cliente']) && 
+                !$this->foiEnviadoPorMimOuBot($mensagem)
+            ) {
+                $numeroCliente = $mensagem['numero_cliente'] . '@s.whatsapp.net'; // 👈 Adiciona o @
+
+                $cliente = Cliente::where('telefoneWhatsapp', $numeroCliente)->first();
+
+                if ($cliente) {
+                    $cliente->increment('qtd_mensagens_novas');
+                } else {
+                    Cliente::create([
+                        'telefoneWhatsapp' => $numeroCliente,
+                        'qtd_mensagens_novas' => 1,
+                    ]);
+                }
+            }
+
+            // SALVAR a mensagem normalmente
             Mensagem::create([
                 'numero_cliente'     => $mensagem['numero_cliente'] ?? '',
                 'tipo_de_mensagem'   => $tipoOriginal,
@@ -43,7 +63,7 @@ class WebhookController extends Controller
                 'data_e_hora_envio'  => $mensagem['data_e_hora_envio'] ?? now(),
                 'enviado_por_mim'    => filter_var($mensagem['enviado_por_mim'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'usuario_id'         => $mensagem['usuario_id'] ?? null,
-                'bot'    => filter_var($mensagem['bot'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'bot'                => filter_var($mensagem['bot'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ]);
         }
 
@@ -72,6 +92,13 @@ class WebhookController extends Controller
         };
     }
 
+    private function foiEnviadoPorMimOuBot(array $mensagem): bool
+    {
+        return 
+            filter_var($mensagem['enviado_por_mim'] ?? false, FILTER_VALIDATE_BOOLEAN) ||
+            filter_var($mensagem['bot'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    }
+
     private function salvarArquivoBase64(string $base64, string $tipo, string $numeroCliente): ?string
     {
         $extensao = match ($tipo) {
@@ -85,7 +112,7 @@ class WebhookController extends Controller
             'imagem' => 'imagens',
             'audio'  => 'audios',
             'video'  => 'videos',
-            default  => 'outros',
+            default => 'outros',
         };
 
         $caminhoCompleto = "uploads/$numeroCliente/$pastaTipo";

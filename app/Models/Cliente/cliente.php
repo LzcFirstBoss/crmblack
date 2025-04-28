@@ -12,6 +12,7 @@ class Cliente extends Model
         'telefoneWhatsapp',
         'botativo',
         'email',
+        'qtd_mensagens_novas',
     ];
 
     protected $casts = [
