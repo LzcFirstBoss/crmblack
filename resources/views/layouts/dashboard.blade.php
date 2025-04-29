@@ -29,7 +29,7 @@
                         class="flex items-center gap-3 px-3 py-2 rounded transition {{ request()->is('dashboard') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
                         <i class="bi bi-house text-lg"></i> <span class="sidebar-text hidden">Dashboard</span>
                     </a>
-                    <a href="{{ url('/conversas') }}"
+                    <a href="{{ url('/conversar') }}"
                         class="flex items-center gap-3 px-3 py-2 rounded transition {{ request()->is('conversas') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
                         <i class="bi bi-chat text-lg"></i> <span class="sidebar-text hidden">Conversas</span>
                     </a>

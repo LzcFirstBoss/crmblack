@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
-use App\Models\Webhook\Mensagem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use App\Models\Webhook\Mensagem;
 use App\Models\Cliente\Cliente;
 
 class WebhookController extends Controller
@@ -19,65 +21,67 @@ class WebhookController extends Controller
         $dados = is_array($request->all()) ? $request->all() : [$request->all()];
 
         foreach ($dados as $mensagem) {
-            $tipoOriginal = $mensagem['tipo_de_mensagem'] ?? '';
-
-            if (!$this->tipoEhValido($tipoOriginal)) {
+            if (!$this->tipoEhValido($mensagem['tipo_de_mensagem'] ?? '')) {
                 continue;
             }
 
-            $tipo = $this->tipoNormalizado($tipoOriginal);
+            $tipo = $this->tipoNormalizado($mensagem['tipo_de_mensagem']);
+            $numeroCliente = $mensagem['numero_cliente'] . '@s.whatsapp.net';
             $caminhoArquivo = null;
 
             if (in_array($tipo, ['imagem', 'audio', 'video']) && !empty($mensagem['base64'])) {
-                $caminhoArquivo = $this->salvarArquivoBase64(
-                    $mensagem['base64'],
-                    $tipo,
-                    $mensagem['numero_cliente']
+                $caminhoArquivo = $this->salvarArquivoBase64($mensagem['base64'], $tipo, $mensagem['numero_cliente']);
+            }
+
+            // Incrementar mensagens novas
+            if (isset($mensagem['numero_cliente']) && !$this->foiEnviadoPorMimOuBot($mensagem)) {
+                $cliente = Cliente::firstOrCreate(
+                    ['telefoneWhatsapp' => $numeroCliente],
+                    ['qtd_mensagens_novas' => 0]
                 );
+
+                $cliente->increment('qtd_mensagens_novas');
             }
 
-            // Incrementar qtd_mensagens_novas
-            if (
-                isset($mensagem['numero_cliente']) && 
-                !$this->foiEnviadoPorMimOuBot($mensagem)
-            ) {
-                $numeroCliente = $mensagem['numero_cliente'] . '@s.whatsapp.net'; // 👈 Adiciona o @
-
-                $cliente = Cliente::where('telefoneWhatsapp', $numeroCliente)->first();
-
-                if ($cliente) {
-                    $cliente->increment('qtd_mensagens_novas');
-                } else {
-                    Cliente::create([
-                        'telefoneWhatsapp' => $numeroCliente,
-                        'qtd_mensagens_novas' => 1,
-                    ]);
-                }
-            }
-
-            // SALVAR a mensagem normalmente
-            Mensagem::create([
-                'numero_cliente'     => $mensagem['numero_cliente'] ?? '',
-                'tipo_de_mensagem'   => $tipoOriginal,
-                'mensagem_enviada'   => $caminhoArquivo ?? ($mensagem['mensagem_enviada'] ?? null),
-                'data_e_hora_envio'  => $mensagem['data_e_hora_envio'] ?? now(),
-                'enviado_por_mim'    => filter_var($mensagem['enviado_por_mim'] ?? false, FILTER_VALIDATE_BOOLEAN),
-                'usuario_id'         => $mensagem['usuario_id'] ?? null,
-                'bot'                => filter_var($mensagem['bot'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            // Salvar no banco
+            $novaMensagem = Mensagem::create([
+                'numero_cliente'    => $mensagem['numero_cliente'] ?? '',
+                'tipo_de_mensagem'  => $mensagem['tipo_de_mensagem'] ?? '',
+                'mensagem_enviada'  => $caminhoArquivo ?? ($mensagem['mensagem_enviada'] ?? null),
+                'data_e_hora_envio' => $mensagem['data_e_hora_envio'] ?? now(),
+                'enviado_por_mim'   => filter_var($mensagem['enviado_por_mim'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'usuario_id'        => $mensagem['usuario_id'] ?? null,
+                'bot'               => filter_var($mensagem['bot'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ]);
+
+            // Disparar evento WebSocket para navegador
+            $this->notificarWebSocket($novaMensagem);
         }
 
-        return response()->json(['status' => 'mensagem(ns) salva(s) com sucesso']);
+        return response()->json(['status' => 'Mensagem(ns) salva(s) com sucesso']);
     }
 
-    private function tipoEhValido(string $tipoOriginal): bool
+    private function notificarWebSocket(Mensagem $mensagem)
     {
-        return in_array($tipoOriginal, [
-            'conversation',
-            'extendedTextMessage',
-            'imageMessage',
-            'audioMessage',
-            'videoMessage',
+        try {
+            Http::post('http://localhost:3001/enviar', [
+                'evento' => 'novaMensagem',
+                'dados' => [
+                    'numero' => $mensagem->numero_cliente,
+                    'mensagem' => $mensagem->mensagem_enviada,
+                    'data_e_hora_envio' => $mensagem->data_e_hora_envio,
+                    'enviado_por_mim' => $mensagem->enviado_por_mim,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar WebSocket: ' . $e->getMessage());
+        }
+    }
+
+    private function tipoEhValido(string $tipo): bool
+    {
+        return in_array($tipo, [
+            'conversation', 'extendedTextMessage', 'imageMessage', 'audioMessage', 'videoMessage',
         ]);
     }
 
@@ -85,10 +89,10 @@ class WebhookController extends Controller
     {
         return match ($tipoOriginal) {
             'conversation', 'extendedTextMessage' => 'texto',
-            'imageMessage'  => 'imagem',
-            'audioMessage'  => 'audio',
-            'videoMessage'  => 'video',
-            default         => 'desconhecido',
+            'imageMessage' => 'imagem',
+            'audioMessage' => 'audio',
+            'videoMessage' => 'video',
+            default => 'desconhecido',
         };
     }
 
@@ -103,15 +107,15 @@ class WebhookController extends Controller
     {
         $extensao = match ($tipo) {
             'imagem' => 'jpg',
-            'audio'  => 'mp3',
-            'video'  => 'mp4',
-            default  => 'bin',
+            'audio' => 'mp3',
+            'video' => 'mp4',
+            default => 'bin',
         };
 
         $pastaTipo = match ($tipo) {
             'imagem' => 'imagens',
-            'audio'  => 'audios',
-            'video'  => 'videos',
+            'audio' => 'audios',
+            'video' => 'videos',
             default => 'outros',
         };
 

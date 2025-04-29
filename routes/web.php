@@ -8,6 +8,9 @@
     use App\Http\Controllers\Historico\HistoricoConversaController;
     use App\Http\Controllers\Bots\BotController;
     use App\Http\Controllers\Calendario\EventoController;
+    use App\Http\Controllers\Conversar\ConversasController;
+    use App\Http\Controllers\Webhook\WebhookController;
+
     //rotas de login
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -69,3 +72,9 @@
         Route::post('/eventos', [EventoController::class, 'store'])->name('eventos.store');
     });
 
+
+
+        Route::get('/conversar', [ConversasController::class, 'index'])->name('conversas.index');
+        Route::get('/conversar/{numero}', [ConversasController::class, 'historico'])->name('conversas.historico');
+        Route::get('/conversar-parcial', [ConversasController::class, 'parcial'])->name('conversas.parcial');
+        Route::post('/zerar-mensagens-novas/{numero}', [ConversasController::class, 'zerarMensagensNovas'])->name('conversas.zerarMensagensNovas');
