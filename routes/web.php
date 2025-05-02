@@ -1,5 +1,4 @@
     <?php
-
     use Illuminate\Support\Facades\Route;
     use App\Http\Controllers\Auth\AuthController;
     use App\Http\Controllers\Kanban\KanbanController;
@@ -15,15 +14,15 @@
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
-    //rotas com proteção de login
+    //rotas padrão
     Route::middleware('auth')->group(function () {
-        Route::get('/', function() {return view('user.index');});
+        Route::get('/', function () {return view('user.index');});
         Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-        Route::get('/dashboard', function () { return view('user.index'); })->name('dashboard');
+        Route::get('/dashboard', function () {return view('user.index');})->name('dashboard');
     });
 
-    //Kanban
-    Route::middleware('auth')->group(function(){
+    //Kanban - crm
+    Route::middleware('auth')->group(function () {
         Route::get('/kanban', [KanbanController::class, 'index'])->name('kanban.index');
         Route::post('/kanban/atualizar-status', [KanbanController::class, 'atualizarStatus'])->name('kanban.atualizar-status');
         Route::get('/kanban/parcial', [KanbanController::class, 'parcial'])->name('kanban.parcial');
@@ -33,13 +32,12 @@
     });
 
     //Historico de conversas abertas
-    Route::middleware('auth')->group(function(){
-
+    Route::middleware('auth')->group(function () {
         // Página com o histórico completo de um número
         Route::get('/kanban/historico/{numero}', [HistoricoConversaController::class, 'historico'])->name('kanban.historico');
 
         // Atualização em tempo real via AJAX
-        Route::get('/kanban/historico/{numero}/atualizar', [HistoricoConversaController::class, 'atualizarHistorico']); 
+        Route::get('/kanban/historico/{numero}/atualizar', [HistoricoConversaController::class, 'atualizarHistorico']);
 
         // Envia mensagem pela api evolution
         Route::post('/kanban/enviar-mensagem', [EvolutionController::class, 'enviarMensagem'])->name('kanban.enviar-mensagem');
@@ -49,8 +47,7 @@
     });
 
     // configs whatsapp
-    Route::middleware('auth')->group(function(){
-
+    Route::middleware('auth')->group(function () {
         //conectar/desconectar
         Route::get('/config', [EvolutionController::class, 'painelWhatsapp'])->name('evolution.qrcpde');
         Route::get('/evolution/conectar', [EvolutionController::class, 'conectarInstancia'])->name('evolution.conectar');
@@ -67,12 +64,15 @@
     });
 
     // Calendario/agenada
-    Route::middleware('auth')->group(function(){
+    Route::middleware('auth')->group(function () {
         Route::view('/calendario', 'calendario.index')->name('agenda.index');
         Route::post('/eventos', [EventoController::class, 'store'])->name('eventos.store');
     });
 
+    // Conversar
+    Route::middleware('auth')->group(function () {
         Route::get('/conversar', [ConversasController::class, 'index'])->name('conversas.index');
         Route::get('/conversar/{numero}', [ConversasController::class, 'historico'])->name('conversas.historico');
         Route::get('/conversar-parcial', [ConversasController::class, 'parcial'])->name('conversas.parcial');
         Route::post('/zerar-mensagens-novas/{numero}', [ConversasController::class, 'zerarMensagensNovas'])->name('conversas.zerarMensagensNovas');
+    });
