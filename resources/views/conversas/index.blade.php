@@ -79,7 +79,7 @@
         let numeroAtualSelecionado = null;
 
         function conectarWebSocket() {
-            socket = new WebSocket('ws://localhost:3000');
+            socket = new WebSocket('wss://wb.zabulonmarketing.com.br//ws');
 
             socket.onopen = () => {
                 console.log('Conectado ao WebSocket');

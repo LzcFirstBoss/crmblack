@@ -72,8 +72,6 @@
         Route::post('/eventos', [EventoController::class, 'store'])->name('eventos.store');
     });
 
-
-
         Route::get('/conversar', [ConversasController::class, 'index'])->name('conversas.index');
         Route::get('/conversar/{numero}', [ConversasController::class, 'historico'])->name('conversas.historico');
         Route::get('/conversar-parcial', [ConversasController::class, 'parcial'])->name('conversas.parcial');
