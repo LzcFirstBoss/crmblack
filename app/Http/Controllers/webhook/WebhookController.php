@@ -33,14 +33,26 @@ class WebhookController extends Controller
                 $caminhoArquivo = $this->salvarArquivoBase64($mensagem['base64'], $tipo, $mensagem['numero_cliente']);
             }
 
-            // Incrementar mensagens novas
+            // Incrementar mensagens novas e criar cliente se não existir
             if (isset($mensagem['numero_cliente']) && !$this->foiEnviadoPorMimOuBot($mensagem)) {
-                $cliente = Cliente::firstOrCreate(
-                    ['telefoneWhatsapp' => $numeroCliente],
-                    ['qtd_mensagens_novas' => 0]
-                );
-
-                $cliente->increment('qtd_mensagens_novas');
+                $numeroClienteSemDominio = $mensagem['numero_cliente'];
+                $numeroCliente = $numeroClienteSemDominio . '@s.whatsapp.net';
+            
+                // Verificar se já existe cliente
+                $cliente = Cliente::where('telefoneWhatsapp', $numeroCliente)->first();
+            
+                if (!$cliente) {
+                    // Se não existe, cria com botativo e nome
+                    $cliente = Cliente::create([
+                        'telefoneWhatsapp'    => $numeroCliente,
+                        'nome'                => $mensagem['nome'] ?? null,
+                        'botativo'            => filter_var($mensagem['botativo'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                        'qtd_mensagens_novas' => 1,
+                    ]);
+                } else {
+                    // Se já existe, só incrementa as mensagens novas
+                    $cliente->increment('qtd_mensagens_novas');
+                }
             }
 
             // Salvar no banco

@@ -13,6 +13,7 @@ class Cliente extends Model
         'botativo',
         'email',
         'qtd_mensagens_novas',
+        'nome',
     ];
 
     protected $casts = [
