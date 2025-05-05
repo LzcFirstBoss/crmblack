@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Bot\Bot;
 use App\Models\Bot\FuncoesBot;
 use App\Models\Webhook\Mensagem;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Arr;
 
 
 class EvolutionController extends Controller
@@ -211,4 +213,100 @@ class EvolutionController extends Controller
             return response()->json(['erro' => 'Erro interno: ' . $e->getMessage()], 500);
         }
     }
+
+public function audioForm()
+{
+    return view('teste.form');
+}
+
+public function audioEnviar(Request $request)
+{
+    // Garantir número no formato correto
+    $numero = preg_replace('/\D/', '', $request->input('numero'));
+    $audioBase64 = $request->input('audio_base64');
+
+    // Verificar se está ok
+    if (strlen($numero) < 10 || !$audioBase64) {
+        return response()->json(['erro' => 'Número ou áudio inválido.']);
+    }
+
+    // ====== SALVAR O ÁUDIO NO STORAGE ======
+
+    // Caminho de destino -> public/uploads/{numero}/audio
+    $tipo = 'audios';
+    $diretorio = "public/uploads/{$numero}/{$tipo}";
+
+    // Decodificar base64
+    $audioBinario = base64_decode($audioBase64);
+
+    // Nome do arquivo (único)
+    $nomeArquivo = uniqid() . '.webm';
+
+    // Salvar o arquivo
+    Storage::put("{$diretorio}/{$nomeArquivo}", $audioBinario);
+
+    // Gerar URL pública (caso precise em outras telas, mas aqui vamos salvar o caminho relativo)
+    $caminhoArquivo = "{$diretorio}/{$nomeArquivo}";
+
+    // ====== ENVIAR PARA EVOLUTION ======
+
+    $instance = env('EVOLUTION_INSTANCE_ID');
+    $apiKey = env('EVOLUTION_API_KEY');
+    $server = env('EVOLUTION_API_URL');
+
+    $url = "{$server}/message/sendWhatsAppAudio/{$instance}";
+
+    $payload = [
+        "number" => $numero,
+        "audio" => $audioBase64,
+        "delay" => 0,
+        "encoding" => true
+    ];
+
+    // Enviar via cURL
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            "apikey: {$apiKey}",
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+    ]);
+
+    $response = curl_exec($curl);
+    $erroCurl = curl_error($curl);
+    curl_close($curl);
+
+    if ($erroCurl) {
+        return response()->json(['erro' => 'Erro cURL: ' . $erroCurl]);
+    }
+
+    $resposta = json_decode($response, true);
+
+    if (isset($resposta['status']) && $resposta['status'] == 400) {
+        return response()->json(['erro' => 'Erro da Evolution: ' . json_encode($resposta['response']['message'] ?? 'Erro desconhecido')]);
+    }
+
+    // ====== SALVAR NO BANCO ======
+
+    Mensagem::create([
+        'numero_cliente' => $numero,
+        'tipo_de_mensagem' => 'audio',
+        'mensagem_enviada' => $caminhoArquivo, // salva o caminho do áudio salvo
+        'data_e_hora_envio' => now(),
+        'enviado_por_mim' => true,
+        'usuario_id' => auth()->id(),
+        'bot' => false,
+    ]);
+
+    return response()->json([
+        'status' => 'Áudio enviado com sucesso',
+        'resposta' => $resposta
+    ]);
+}
+
+
 }

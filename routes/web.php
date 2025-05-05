@@ -8,8 +8,6 @@
     use App\Http\Controllers\Bots\BotController;
     use App\Http\Controllers\Calendario\EventoController;
     use App\Http\Controllers\Conversar\ConversasController;
-    use App\Http\Controllers\Webhook\WebhookController;
-
     //rotas de login
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -76,3 +74,7 @@
         Route::get('/conversar-parcial', [ConversasController::class, 'parcial'])->name('conversas.parcial');
         Route::post('/zerar-mensagens-novas/{numero}', [ConversasController::class, 'zerarMensagensNovas'])->name('conversas.zerarMensagensNovas');
     });
+
+
+    Route::post('/api/evolution/enviar-audio-base64', [EvolutionController::class, 'audioEnviar'])->name('teste.evolution.audio.enviar');
+    

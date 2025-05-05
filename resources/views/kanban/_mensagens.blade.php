@@ -11,7 +11,7 @@
 
         $conteudo = $msg->mensagem_enviada;
         $ehImagem = preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $conteudo);
-        $ehAudio = preg_match('/\.(mp3|ogg|wav|m4a)$/i', $conteudo);
+        $ehAudio = preg_match('/\.(mp3|ogg|wav|m4a|webm)$/i', $conteudo);
         $ehArquivo = preg_match('/^uploads\//i', $conteudo);
         $url = $ehArquivo ? asset('storage/' . $conteudo) : null;
     @endphp

@@ -2,6 +2,66 @@
 <title>Zabulon - Conversas</title>
 
 @section('content')
+
+<style>
+@keyframes barraAndando {
+    0% { left: -33%; }
+    100% { left: 100%; }
+}
+
+.animate-barra {
+    animation: barraAndando 1.5s linear infinite;
+}
+
+#gravandoContainer button {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+}
+
+#menuAnexar {
+    transition: all 0.2s ease;
+}
+
+#gravandoContainer .barra-gravacao {
+    flex-grow: 1;
+    height: 4px;
+    background-color: #ddd;
+    border-radius: 9999px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Botão + (normal e ativo) */
+#btnAdicionar {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+#btnAdicionar.open {
+    transform: rotate(45deg);
+    color: #fb923c; /* Laranja Zabulon quando ativo */
+}
+
+#barraAnimada {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 25%;
+    height: 100%;
+    background-color: #fb923c;
+}
+
+#tempoGravado {
+    width: 40px;
+    text-align: center;
+    font-size: 14px;
+}
+
+</style>
+
     <div class="flex h-[calc(100vh-70px)] bg-gray-100">
         <!-- Sidebar: Lista de Contatos -->
         <div class="w-1/3 border-r bg-white flex flex-col" id="lista-contatos">
@@ -63,147 +123,86 @@
                 <div id="mensagens-chat" class="space-y-4 hidden"></div>
             </div>
 
-            <!-- Input de enviar mensagem -->
             <div id="area-input" class="flex items-center gap-3 p-4 border-t bg-white hidden">
-                <input type="text" id="input-mensagem" placeholder="Digite uma mensagem..."
-                    class="flex-1 border rounded-lg px-3 py-2 text-sm">
-                <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm">Enviar</button>
+
+                <!-- Caixa de Mensagem com ícones dentro -->
+                <div class="flex items-center border rounded-full px-4 py-2 bg-gray-100 flex-1 space-x-3 barra-input">
+                    <!-- Botão de adicionar (futuramente para anexar arquivos, fotos etc) -->
+
+<!-- Botão + com menu dentro -->
+            <div class="relative">
+                <button id="btnAdicionar" class="text-gray-500 hover:text-gray-700">
+                    <i class="bi bi-plus-lg text-xl"></i>
+                </button>
+
+                <!-- Menu que abre ao clicar no botão + -->
+                <div id="menuAnexar" class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl border border-gray-200 w-44 hidden z-50">
+                    <ul class="divide-y divide-gray-200">
+                        <li>
+                            <button id="btnAnexarFotoVideo" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
+                                <i class="bi bi-file-earmark-image text-blue-500 text-lg"></i> Foto / Vídeo
+                            </button>
+                        </li>
+                        <li>
+                            <button id="btnAnexarAudio" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
+                                <i class="bi bi-mic-fill text-green-500 text-lg"></i> Áudio
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
             </div>
+
+            
+                    <!-- Input texto -->
+                    <input type="text" id="input-mensagem" placeholder="Digite uma mensagem..."
+                        class="flex-1 bg-transparent focus:outline-none text-sm" onkeydown="if(event.key === 'Enter') enviarMensagem()">
+            
+                    <!-- Botão iniciar gravação -->
+                    <button id="btnIniciarGravacao" class="text-orange-500 hover:text-orange-600">
+                        <i class="bi bi-mic-fill text-xl"></i>
+                    </button>
+            
+                    <!-- Botão enviar texto -->
+                    <button id="" class="text-orange-500 hover:text-orange-600" onclick="enviarMensagem()">
+                        <i class="bi bi-send-fill text-xl"></i>
+                    </button>
+                </div>
+            
+                <!-- Área de gravação (ativa quando gravando) -->
+                <div id="gravandoContainer" class="hidden flex items-center gap-3 flex-1 ml-2 bg-gray-100 rounded-full px-3 py-2 shadow-sm">
+                    <button id="btnCancelarAudio" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-md">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+            
+                    <button id="btnPausarContinuarAudio" class="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-full shadow-md">
+                        <i class="bi bi-pause-fill"></i>
+                    </button>
+            
+                    <button id="btnEnviarAudio" class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-md">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+            
+                    <div class="barra-gravacao relative w-40 h-2 rounded-full overflow-hidden bg-gray-200">
+                        <div id="barraAnimada" class="absolute left-0 top-0 h-full w-1/3 bg-orange-500 animate-barra"></div>
+                    </div>
+            
+                    <div id="tempoGravado" class="text-sm w-10 text-center">0:00</div>
+                </div>
+            
+            </div>
+            
+            
+            
+            
+            
         </div>
-
-
     </div>
 
     <script>
-        let socket = null;
-        let numeroAtualSelecionado = null;
-
-        function conectarWebSocket() {
-            const token = "{{ env('WEBSOCKET_TOKEN') }}";
-            const socket = new WebSocket(`http://localhost:3000?token=${token}`);
-
-            socket.onopen = () => {
-                console.log('Conectado ao WebSocket');
-            };
-
-            socket.onmessage = (event) => {
-                const mensagem = JSON.parse(event.data);
-
-                if (mensagem.evento === 'novaMensagem') {
-                    const dados = mensagem.dados;
-
-                    if (dados.numero === numeroAtualSelecionado) {
-                        carregarNovasMensagens();
-                    }
-                }
-            };
-
-            socket.onclose = () => {
-                console.log('WebSocket desconectado');
-                // Se quiser reconectar automaticamente depois, é aqui que implementa
-            };
-
-            socket.onerror = (error) => {
-                console.error('Erro no WebSocket:', error);
-            };
-        }
-
-        function abrirConversa(numero) {
-            numeroAtualSelecionado = numero;
-
-            // Atualizar o título
-            document.getElementById('titulo-contato').innerText = numero;
-
-            // Mostrar o input
-            document.getElementById('area-input').classList.remove('hidden');
-
-            // Esconder a tela inicial e mostrar o chat real
-            document.getElementById('mensagem-inicial').classList.add('hidden');
-            document.getElementById('mensagens-chat').classList.remove('hidden');
-
-            // Limpar seleção anterior e destacar novo contato
-            document.querySelectorAll('.contato').forEach(c => c.classList.remove('bg-gray-200'));
-            const contatoSelecionado = document.getElementById('contato-' + numero);
-            if (contatoSelecionado) {
-                contatoSelecionado.classList.add('bg-gray-200');
-            }
-
-            document.getElementById('mensagens-chat').innerHTML = `
-        <div class="w-full flex justify-center items-center py-10 text-gray-400">
-            <i class="bi bi-arrow-repeat animate-spin text-2xl mr-2"></i> Carregando mensagens...
-        </div>`;
-
-            // Carregar as mensagens da conversa
-            fetch('/conversar/' + numero)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('mensagens-chat').innerHTML = html;
-
-                    setTimeout(() => {
-                        const containerChat = document.getElementById('chat-mensagens');
-                        containerChat.scrollTop = containerChat.scrollHeight;
-                    }, 50);
-                });
-
-
-            // Zerar mensagens novas no banco
-            fetch('/zerar-mensagens-novas/' + numero, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                }
-            }).then(() => {
-                atualizarListaContatos();
-            });
-        }
-
-        function carregarNovasMensagens() {
-            fetch('/conversar/' + numeroAtualSelecionado)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('mensagens-chat').innerHTML = html;
-
-                    setTimeout(() => {
-                        const containerChat = document.getElementById('chat-mensagens');
-                        containerChat.scrollTop = containerChat.scrollHeight;
-                    }, 50);
-                });
-        }
-
-        function atualizarListaContatos() {
-            fetch('/conversar-parcial')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('lista-contatos-itens').innerHTML = html;
-
-                    if (numeroAtualSelecionado) {
-                        const contatoSelecionado = document.getElementById('contato-' + numeroAtualSelecionado);
-                        if (contatoSelecionado) {
-                            contatoSelecionado.classList.add('bg-gray-200');
-                        }
-                    }
-                });
-        }
-
-        function filtrarContatos() {
-            let input = document.getElementById('pesquisa-contato').value.toLowerCase();
-            let contatos = document.querySelectorAll('#lista-contatos-itens .contato');
-
-            contatos.forEach(function(contato) {
-                let numero = contato.querySelector('.numero-cliente')?.innerText.toLowerCase() || '';
-
-                if (numero.includes(input)) {
-                    contato.style.display = '';
-                } else {
-                    contato.style.display = 'none';
-                }
-            });
-        }
-
-        // Atualizar lista de contatos a cada 2 segundos
-        setInterval(atualizarListaContatos, 2000);
-
-        // Conectar no WebSocket assim que abrir a página
-        conectarWebSocket();
+        window.ROTA_ENVIAR_MENSAGEM = "{{ route('kanban.enviar-mensagem') }}";
+        window.CSRF_TOKEN = "{{ csrf_token() }}";
+        window.WEBSOCKET_TOKEN = "{{ env('WEBSOCKET_TOKEN') }}";
     </script>
+    <script src="{{ asset('js/conversar/conversar.js') }}"></script>    
 @endsection
