@@ -298,6 +298,17 @@
     </div>
 </div>
 
+<div id="modalViewMedia" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-4 relative space-y-4">
+        <button id="fecharViewMedia" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        <div id="contentViewMedia" class="text-center"></div>
+
+        <div class="flex justify-between mt-4">
+            <button id="prevMedia" class="text-gray-400 hover:text-gray-600 text-2xl">&larr;</button>
+            <button id="nextMedia" class="text-gray-400 hover:text-gray-600 text-2xl">&rarr;</button>
+        </div>
+    </div>
+</div>
 
 
     <script>

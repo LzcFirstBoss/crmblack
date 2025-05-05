@@ -433,3 +433,212 @@ btnConfirmarEnvio.addEventListener('click', () => {
     });
 });
 
+const btnEmoji = document.getElementById('btnEmoji');
+const emojiPickerContainer = document.getElementById('emojiPicker');
+const inputMensagemEmoji = document.getElementById('input-mensagem');
+
+// Toggle do picker
+btnEmoji.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (emojiPickerContainer.classList.contains('hidden')) {
+        emojiPickerContainer.classList.remove('hidden');
+        emojiPickerContainer.innerHTML = '';
+
+        const picker = new EmojiMart.Picker({
+            onEmojiSelect: (emoji) => {
+                insertEmoji(emoji.native);
+                // NÃO FECHA MAIS AO ESCOLHER O EMOJI
+            },
+            set: 'apple',
+            locale: 'pt'
+        });
+
+        emojiPickerContainer.appendChild(picker);
+    } else {
+        emojiPickerContainer.classList.add('hidden');
+    }
+});
+
+// Fechar ao clicar fora
+document.addEventListener('click', (e) => {
+    if (!emojiPickerContainer.contains(e.target) && e.target !== btnEmoji) {
+        emojiPickerContainer.classList.add('hidden');
+    }
+});
+
+function insertEmoji(emoji) {
+    inputMensagemEmoji.focus();
+
+    const range = document.createRange();
+    range.selectNodeContents(inputMensagemEmoji);
+    range.collapse(false);
+
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    const emojiNode = document.createTextNode(emoji);
+    range.insertNode(emojiNode);
+
+    range.setStartAfter(emojiNode);
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
+
+
+
+let mediaItens = [];
+let mediaIndex = 0;
+
+// Função para abrir o modal
+function abrirModalMedia(index) {
+    const modal = document.getElementById("modalViewMedia");
+    const content = document.getElementById("contentViewMedia");
+
+    const item = mediaItens[index];
+    content.innerHTML = '';
+
+    if (item.type === 'image') {
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.classList.add("max-h-[75vh]", "mx-auto", "rounded");
+        content.appendChild(img);
+    } else if (item.type === 'audio') {
+        const audio = document.createElement('audio');
+        audio.src = item.src;
+        audio.controls = true;
+        audio.classList.add("w-full", "rounded");
+        content.appendChild(audio);
+
+        // Tentar dar autoplay após adicionar no DOM
+        setTimeout(() => audio.play().catch(() => {}), 100);
+    } else if (item.type === 'video') {
+        const video = document.createElement('video');
+        video.src = item.src;
+        video.controls = true;
+        video.classList.add("w-full", "rounded", "bg-black");
+        video.autoplay = true;
+        content.appendChild(video);
+    }
+
+    modal.classList.remove('hidden');
+}
+
+// Ao clicar na mídia, abrir o modal
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.media-clickable')) {
+        const allMedia = Array.from(document.querySelectorAll('.media-clickable'));
+        mediaItens = allMedia.map(el => ({
+            type: el.dataset.type,
+            src: el.dataset.src
+        }));
+        mediaIndex = allMedia.indexOf(e.target.closest('.media-clickable'));
+        abrirModalMedia(mediaIndex);
+    }
+});
+
+// Fechar o modal no botão fechar
+document.getElementById('fecharViewMedia').addEventListener('click', () => {
+    document.getElementById("modalViewMedia").classList.add('hidden');
+});
+
+// Fechar o modal clicando fora (overlay)
+document.getElementById('modalViewMedia').addEventListener('click', (e) => {
+    if (e.target.id === 'modalViewMedia') {
+        document.getElementById("modalViewMedia").classList.add('hidden');
+    }
+});
+
+// Botões de próxima e anterior
+document.getElementById('prevMedia').addEventListener('click', () => {
+    mediaIndex = (mediaIndex - 1 + mediaItens.length) % mediaItens.length;
+    abrirModalMedia(mediaIndex);
+});
+
+document.getElementById('nextMedia').addEventListener('click', () => {
+    mediaIndex = (mediaIndex + 1) % mediaItens.length;
+    abrirModalMedia(mediaIndex);
+});
+
+// Teclado: ESC fecha e seta para os lados navega
+document.addEventListener('keydown', (e) => {
+    const modal = document.getElementById("modalViewMedia");
+    if (modal.classList.contains('hidden')) return;
+
+    if (e.key === 'Escape') {
+        modal.classList.add('hidden');
+    } else if (e.key === 'ArrowRight') {
+        document.getElementById('nextMedia').click();
+    } else if (e.key === 'ArrowLeft') {
+        document.getElementById('prevMedia').click();
+    }
+});
+
+function criarPlayerAudio(url) {
+    const container = document.createElement("div");
+    container.className = "custom-audio-player flex items-center gap-4 bg-gray-100 rounded-lg p-3";
+
+    const btn = document.createElement("button");
+    btn.className = "play-pause text-orange-500 text-2xl";
+    btn.innerHTML = '<i class="bi bi-play-fill"></i>';
+
+    const barra = document.createElement("div");
+    barra.className = "progress-bar flex-1 bg-gray-300 rounded h-2 cursor-pointer";
+    const progresso = document.createElement("div");
+    progresso.className = "progress bg-orange-500 h-2 rounded";
+    progresso.style.width = "0%";
+    barra.appendChild(progresso);
+
+    const tempo = document.createElement("div");
+    tempo.className = "time text-sm text-gray-600";
+    tempo.textContent = "0:00 / 0:00";
+
+    container.appendChild(btn);
+    container.appendChild(barra);
+    container.appendChild(tempo);
+
+    const audio = new Audio(url);
+
+    audio.addEventListener("loadedmetadata", () => {
+        tempo.textContent = `0:00 / ${formatarTempo(Math.floor(audio.duration))}`;
+    });
+
+    audio.addEventListener("timeupdate", () => {
+        const pct = (audio.currentTime / audio.duration) * 100;
+        progresso.style.width = pct + "%";
+        tempo.textContent = `${formatarTempo(Math.floor(audio.currentTime))} / ${formatarTempo(Math.floor(audio.duration))}`;
+    });
+
+    audio.addEventListener("ended", () => {
+        btn.innerHTML = '<i class="bi bi-play-fill"></i>';
+    });
+
+    btn.addEventListener("click", () => {
+        if (audio.paused) {
+            document.querySelectorAll(".custom-audio-player-container").forEach(container => {
+                const url = container.dataset.src;
+                const player = criarPlayerAudio(url);
+                container.appendChild(player);
+            });
+            
+            audio.play();
+            btn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+        } else {
+            audio.pause();
+            btn.innerHTML = '<i class="bi bi-play-fill"></i>';
+        }
+    });
+
+    barra.addEventListener("click", (e) => {
+        const pct = e.offsetX / barra.offsetWidth;
+        audio.currentTime = pct * audio.duration;
+    });
+
+    return container;
+}
+
+function formatarTempo(segundos) {
+    const m = Math.floor(segundos / 60);
+    const s = segundos % 60;
+    return `${m}:${s < 10 ? '0' + s : s}`;
+}

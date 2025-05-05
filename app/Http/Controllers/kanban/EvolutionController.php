@@ -227,7 +227,7 @@ class EvolutionController extends Controller
 
         // ====== SALVAR O ÁUDIO NO STORAGE ======
 
-        // Caminho de destino -> public/uploads/{numero}/audio
+        // Caminho de destino -> public/uploads/{numero}/audios
         $tipo = 'audios';
         $diretorio = "public/uploads/{$numero}/{$tipo}";
 
@@ -238,10 +238,10 @@ class EvolutionController extends Controller
         $nomeArquivo = uniqid() . '.webm';
 
         // Salvar o arquivo
-        Storage::put("{$diretorio}/{$nomeArquivo}", $audioBinario);
+        $caminhoSalvo = Storage::put("{$diretorio}/{$nomeArquivo}", $audioBinario);
 
-        // Gerar URL pública (caso precise em outras telas, mas aqui vamos salvar o caminho relativo)
-        $caminhoArquivo = "{$diretorio}/{$nomeArquivo}";
+        // Ajustar o caminho para salvar no banco (sem "public/")
+        $caminhoParaBanco = str_replace("public/", "", "{$diretorio}/{$nomeArquivo}");
 
         // ====== ENVIAR PARA EVOLUTION ======
 
@@ -290,7 +290,7 @@ class EvolutionController extends Controller
         Mensagem::create([
             'numero_cliente' => $numero,
             'tipo_de_mensagem' => 'audio',
-            'mensagem_enviada' => $caminhoArquivo, // salva o caminho do áudio salvo
+            'mensagem_enviada' => $caminhoParaBanco, // agora só o caminho relativo correto
             'data_e_hora_envio' => now(),
             'enviado_por_mim' => true,
             'usuario_id' => auth()->id(),
