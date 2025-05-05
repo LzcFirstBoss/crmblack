@@ -65,10 +65,12 @@
             font-size: 14px;
         }
 
-        #input-mensagem{
+        #input-mensagem {
             outline: none;
             word-break: break-word;
-    overflow-wrap: break-word;
+            overflow-wrap: break-word;
+            font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+            font-size: 16px;
         }
 
         #input-mensagem:empty:before {
@@ -90,15 +92,16 @@
         }
 
         .barra-input {
-    border-width: 2px;
-    border-color: #ddd;
-    transition: border-radius 0.2s ease, border-width 0.2s ease;
-}
+            border-width: 2px;
+            border-color: #ddd;
+            transition: border-radius 0.2s ease, border-width 0.2s ease;
+        }
 
-.barra-input.scrolling {
-    border-width: 1px;
-    border-radius: 0.75rem; /* reduz a borda */
-}
+        .barra-input.scrolling {
+            border-width: 1px;
+            border-radius: 0.75rem;
+            /* reduz a borda */
+        }
     </style>
 
     <div class="flex h-[calc(100vh-70px)] bg-gray-100">
@@ -165,49 +168,62 @@
             <div id="area-input" class="flex items-center gap-3 p-4 border-t bg-white hidden">
 
                 <!-- Caixa de Mensagem com ícones dentro -->
-<!-- Caixa de Mensagem com ícones dentro -->
-<div class="flex items-end border rounded-full px-4 py-2 bg-gray-100 flex-1 space-x-3 barra-input relative">
+                <div class="flex items-end border rounded-full px-4 py-2 bg-gray-100 flex-1 space-x-3 barra-input relative">
 
-    <!-- Botão + com menu dentro -->
-    <div class="relative">
-        <button id="btnAdicionar" class="text-gray-500 hover:text-gray-700">
-            <i class="bi bi-plus-lg text-xl"></i>
-        </button>
-
-        <div id="menuAnexar" class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl border border-gray-200 w-44 hidden z-50">
-            <ul class="divide-y divide-gray-200">
-                <li>
-                    <button id="btnAnexarFotoVideo" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
-                        <i class="bi bi-file-earmark-image text-blue-500 text-lg"></i> Foto / Vídeo
+                    <!-- Botão Emoji (padronizado com o resto) -->
+                    <button id="btnEmoji" class="text-gray-500 hover:text-gray-700">
+                        <i class="bi bi-emoji-smile text-xl"></i>
                     </button>
-                </li>
-                <li>
-                    <button id="btnAnexarAudio" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
-                        <i class="bi bi-mic-fill text-green-500 text-lg"></i> Áudio
+
+                    <!-- Picker container -->
+                    <div id="emojiPicker" class="hidden" style="position:absolute; bottom:60px; left:20px; z-index:999;">
+                    </div>
+
+
+
+
+                    <!-- Botão + com menu dentro -->
+                    <div class="relative">
+                        <button id="btnAdicionar" class="text-gray-500 hover:text-gray-700">
+                            <i class="bi bi-plus-lg text-xl"></i>
+                        </button>
+
+                        <div id="menuAnexar"
+                            class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl border border-gray-200 w-44 hidden z-50">
+                            <ul class="divide-y divide-gray-200">
+                                <li>
+                                    <button id="btnAnexarFotoVideo"
+                                        class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
+                                        <i class="bi bi-file-earmark-image text-blue-500 text-lg"></i> Foto / Vídeo
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="btnAnexarAudio"
+                                        class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
+                                        <i class="bi bi-mic-fill text-green-500 text-lg"></i> Áudio
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Área de digitação -->
+                    <div class="flex-1 max-h-28 overflow-y-auto" id="input-mensagem" contenteditable="true"
+                        placeholder="Digite uma mensagem..."
+                        onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); enviarMensagem() }">
+                    </div>
+
+                    <!-- Botão iniciar gravação -->
+                    <button id="btnIniciarGravacao" class="text-orange-500 hover:text-orange-600">
+                        <i class="bi bi-mic-fill text-xl"></i>
                     </button>
-                </li>
-            </ul>
-        </div>
-    </div>
 
-    <!-- Área de digitação -->
-    <div class="flex-1 max-h-28 overflow-y-auto" id="input-mensagem"
-        contenteditable="true"
-        placeholder="Digite uma mensagem..."
-        onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); enviarMensagem() }">
-    </div>
+                    <!-- Botão enviar texto -->
+                    <button class="text-orange-500 hover:text-orange-600" onclick="enviarMensagem()">
+                        <i class="bi bi-send-fill text-xl"></i>
+                    </button>
 
-    <!-- Botão iniciar gravação -->
-    <button id="btnIniciarGravacao" class="text-orange-500 hover:text-orange-600">
-        <i class="bi bi-mic-fill text-xl"></i>
-    </button>
-
-    <!-- Botão enviar texto -->
-    <button class="text-orange-500 hover:text-orange-600" onclick="enviarMensagem()">
-        <i class="bi bi-send-fill text-xl"></i>
-    </button>
-
-</div>
+                </div>
 
 
                 <!-- Área de gravação (ativa quando gravando) -->
