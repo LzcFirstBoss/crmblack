@@ -74,10 +74,11 @@ setInterval(atualizarListaContatos, 2000);
 
 function enviarMensagem() {
     const mensagemInput = document.getElementById('input-mensagem');
-    const mensagem = mensagemInput.value.trim();
+    const mensagem = mensagemInput.textContent.trim(); // PEGAR O TEXTO CERTO
+
     if (!mensagem) return;
 
-    mensagemInput.value = '';
+    mensagemInput.textContent = ''; // LIMPAR O CAMPO
     mensagemInput.focus();
 
     fetch(window.ROTA_ENVIAR_MENSAGEM, {
@@ -251,6 +252,7 @@ function converterParaBase64(blob, callback) {
     reader.onloadend = () => callback(reader.result.split(',')[1]);
 }
 
+// Botão + e menu de anexar
 const btnAdicionar = document.getElementById('btnAdicionar');
 const menuAnexar = document.getElementById('menuAnexar');
 
@@ -264,10 +266,70 @@ btnAdicionar.addEventListener('click', () => {
     }
 });
 
-// Fechar menu se clicar fora
+// Fechar o menu ao clicar fora
 document.addEventListener('click', (e) => {
     if (!btnAdicionar.contains(e.target) && !menuAnexar.contains(e.target)) {
         menuAnexar.classList.add('hidden');
         btnAdicionar.classList.remove('open');
     }
 });
+
+// Função para adicionar formatação no texto
+function formatarTexto(simbolo) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+
+    const range = sel.getRangeAt(0);
+    const selectedText = range.toString();
+
+    if (!selectedText) return;
+
+    const newNode = document.createTextNode(`${simbolo}${selectedText}${simbolo}`);
+    range.deleteContents();
+    range.insertNode(newNode);
+}
+
+// Gerenciar a borda com base no conteúdo (scroll automático)
+const inputMensagemDiv = document.getElementById('input-mensagem');
+const barraInputContainer = inputMensagemDiv.parentElement;
+
+
+// Função que atualiza a borda baseado no tamanho do conteúdo
+function atualizarBorda() {
+    if (inputMensagemDiv.scrollHeight > inputMensagemDiv.clientHeight) {
+        barraInputContainer.classList.add('scrolling');
+    } else {
+        barraInputContainer.classList.remove('scrolling');
+    }
+}
+
+inputMensagemDiv.addEventListener('input', atualizarBorda);
+inputMensagemDiv.addEventListener('scroll', atualizarBorda);
+
+document.addEventListener('click', (e) => {
+    if (!inputMensagemDiv.contains(e.target)) {
+        window.getSelection().removeAllRanges();
+    }
+});
+
+atualizarBorda();
+
+
+// Detectar digitação e mudança de conteúdo
+inputMensagem.addEventListener('input', atualizarBorda);
+
+// Detectar scroll (opcional, caso role manualmente também)
+inputMensagem.addEventListener('scroll', atualizarBorda);
+
+// Remover seleção indesejada quando clica fora do campo
+document.addEventListener('click', (e) => {
+    if (!inputMensagem.contains(e.target)) {
+        window.getSelection().removeAllRanges();
+    }
+});
+
+// Rodar ao carregar para verificar se já tem conteúdo
+atualizarBorda();
+
+
+

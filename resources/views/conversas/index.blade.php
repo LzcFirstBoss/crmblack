@@ -2,65 +2,104 @@
 <title>Zabulon - Conversas</title>
 
 @section('content')
+    <style>
+        @keyframes barraAndando {
+            0% {
+                left: -33%;
+            }
 
-<style>
-@keyframes barraAndando {
-    0% { left: -33%; }
-    100% { left: 100%; }
+            100% {
+                left: 100%;
+            }
+        }
+
+        .animate-barra {
+            animation: barraAndando 1.5s linear infinite;
+        }
+
+        #gravandoContainer button {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+
+        #menuAnexar {
+            transition: all 0.2s ease;
+        }
+
+        #gravandoContainer .barra-gravacao {
+            flex-grow: 1;
+            height: 4px;
+            background-color: #ddd;
+            border-radius: 9999px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Botão + (normal e ativo) */
+        #btnAdicionar {
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        #btnAdicionar.open {
+            transform: rotate(45deg);
+            color: #fb923c;
+            /* Laranja Zabulon quando ativo */
+        }
+
+        #barraAnimada {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 25%;
+            height: 100%;
+            background-color: #fb923c;
+        }
+
+        #tempoGravado {
+            width: 40px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        #input-mensagem{
+            outline: none;
+            word-break: break-word;
+    overflow-wrap: break-word;
+        }
+
+        #input-mensagem:empty:before {
+            content: attr(placeholder);
+            color: #aaa;
+        }
+
+        #input-mensagem::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #input-mensagem::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 9999px;
+        }
+
+        #input-mensagem::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        .barra-input {
+    border-width: 2px;
+    border-color: #ddd;
+    transition: border-radius 0.2s ease, border-width 0.2s ease;
 }
 
-.animate-barra {
-    animation: barraAndando 1.5s linear infinite;
+.barra-input.scrolling {
+    border-width: 1px;
+    border-radius: 0.75rem; /* reduz a borda */
 }
-
-#gravandoContainer button {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-}
-
-#menuAnexar {
-    transition: all 0.2s ease;
-}
-
-#gravandoContainer .barra-gravacao {
-    flex-grow: 1;
-    height: 4px;
-    background-color: #ddd;
-    border-radius: 9999px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Botão + (normal e ativo) */
-#btnAdicionar {
-    transition: transform 0.2s ease, color 0.2s ease;
-}
-
-#btnAdicionar.open {
-    transform: rotate(45deg);
-    color: #fb923c; /* Laranja Zabulon quando ativo */
-}
-
-#barraAnimada {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 25%;
-    height: 100%;
-    background-color: #fb923c;
-}
-
-#tempoGravado {
-    width: 40px;
-    text-align: center;
-    font-size: 14px;
-}
-
-</style>
+    </style>
 
     <div class="flex h-[calc(100vh-70px)] bg-gray-100">
         <!-- Sidebar: Lista de Contatos -->
@@ -126,76 +165,81 @@
             <div id="area-input" class="flex items-center gap-3 p-4 border-t bg-white hidden">
 
                 <!-- Caixa de Mensagem com ícones dentro -->
-                <div class="flex items-center border rounded-full px-4 py-2 bg-gray-100 flex-1 space-x-3 barra-input">
-                    <!-- Botão de adicionar (futuramente para anexar arquivos, fotos etc) -->
+<!-- Caixa de Mensagem com ícones dentro -->
+<div class="flex items-end border rounded-full px-4 py-2 bg-gray-100 flex-1 space-x-3 barra-input relative">
 
-<!-- Botão + com menu dentro -->
-            <div class="relative">
-                <button id="btnAdicionar" class="text-gray-500 hover:text-gray-700">
-                    <i class="bi bi-plus-lg text-xl"></i>
-                </button>
+    <!-- Botão + com menu dentro -->
+    <div class="relative">
+        <button id="btnAdicionar" class="text-gray-500 hover:text-gray-700">
+            <i class="bi bi-plus-lg text-xl"></i>
+        </button>
 
-                <!-- Menu que abre ao clicar no botão + -->
-                <div id="menuAnexar" class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl border border-gray-200 w-44 hidden z-50">
-                    <ul class="divide-y divide-gray-200">
-                        <li>
-                            <button id="btnAnexarFotoVideo" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
-                                <i class="bi bi-file-earmark-image text-blue-500 text-lg"></i> Foto / Vídeo
-                            </button>
-                        </li>
-                        <li>
-                            <button id="btnAnexarAudio" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
-                                <i class="bi bi-mic-fill text-green-500 text-lg"></i> Áudio
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                
-            </div>
-
-            
-                    <!-- Input texto -->
-                    <input type="text" id="input-mensagem" placeholder="Digite uma mensagem..."
-                        class="flex-1 bg-transparent focus:outline-none text-sm" onkeydown="if(event.key === 'Enter') enviarMensagem()">
-            
-                    <!-- Botão iniciar gravação -->
-                    <button id="btnIniciarGravacao" class="text-orange-500 hover:text-orange-600">
-                        <i class="bi bi-mic-fill text-xl"></i>
+        <div id="menuAnexar" class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl border border-gray-200 w-44 hidden z-50">
+            <ul class="divide-y divide-gray-200">
+                <li>
+                    <button id="btnAnexarFotoVideo" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
+                        <i class="bi bi-file-earmark-image text-blue-500 text-lg"></i> Foto / Vídeo
                     </button>
-            
-                    <!-- Botão enviar texto -->
-                    <button id="" class="text-orange-500 hover:text-orange-600" onclick="enviarMensagem()">
-                        <i class="bi bi-send-fill text-xl"></i>
+                </li>
+                <li>
+                    <button id="btnAnexarAudio" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
+                        <i class="bi bi-mic-fill text-green-500 text-lg"></i> Áudio
                     </button>
-                </div>
-            
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Área de digitação -->
+    <div class="flex-1 max-h-28 overflow-y-auto" id="input-mensagem"
+        contenteditable="true"
+        placeholder="Digite uma mensagem..."
+        onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); enviarMensagem() }">
+    </div>
+
+    <!-- Botão iniciar gravação -->
+    <button id="btnIniciarGravacao" class="text-orange-500 hover:text-orange-600">
+        <i class="bi bi-mic-fill text-xl"></i>
+    </button>
+
+    <!-- Botão enviar texto -->
+    <button class="text-orange-500 hover:text-orange-600" onclick="enviarMensagem()">
+        <i class="bi bi-send-fill text-xl"></i>
+    </button>
+
+</div>
+
+
                 <!-- Área de gravação (ativa quando gravando) -->
-                <div id="gravandoContainer" class="hidden flex items-center gap-3 flex-1 ml-2 bg-gray-100 rounded-full px-3 py-2 shadow-sm">
+                <div id="gravandoContainer"
+                    class="hidden flex items-center gap-3 flex-1 ml-2 bg-gray-100 rounded-full px-3 py-2 shadow-sm">
                     <button id="btnCancelarAudio" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-md">
                         <i class="bi bi-trash-fill"></i>
                     </button>
-            
-                    <button id="btnPausarContinuarAudio" class="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-full shadow-md">
+
+                    <button id="btnPausarContinuarAudio"
+                        class="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-full shadow-md">
                         <i class="bi bi-pause-fill"></i>
                     </button>
-            
-                    <button id="btnEnviarAudio" class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-md">
+
+                    <button id="btnEnviarAudio"
+                        class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-md">
                         <i class="bi bi-send-fill"></i>
                     </button>
-            
+
                     <div class="barra-gravacao relative w-40 h-2 rounded-full overflow-hidden bg-gray-200">
                         <div id="barraAnimada" class="absolute left-0 top-0 h-full w-1/3 bg-orange-500 animate-barra"></div>
                     </div>
-            
+
                     <div id="tempoGravado" class="text-sm w-10 text-center">0:00</div>
                 </div>
-            
+
             </div>
-            
-            
-            
-            
-            
+
+
+
+
+
         </div>
     </div>
 
@@ -204,5 +248,5 @@
         window.CSRF_TOKEN = "{{ csrf_token() }}";
         window.WEBSOCKET_TOKEN = "{{ env('WEBSOCKET_TOKEN') }}";
     </script>
-    <script src="{{ asset('js/conversar/conversar.js') }}"></script>    
+    <script src="{{ asset('js/conversar/conversar.js') }}"></script>
 @endsection
