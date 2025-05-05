@@ -203,8 +203,19 @@
                                         <i class="bi bi-mic-fill text-green-500 text-lg"></i> Áudio
                                     </button>
                                 </li>
+                                <li>
+                                    <button id="btnAnexarDocumento"
+                                        class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition text-sm text-gray-700 w-full text-left">
+                                        <i class="bi bi-file-earmark-text text-purple-500 text-lg"></i> Documento
+                                    </button>
+                                </li>
                             </ul>
+                            <input type="file" id="inputFotoVideo" accept="image/*,video/*" style="display:none;">
+                            <input type="file" id="inputAudio" accept="audio/*" style="display:none;">
+                            <input type="file" id="inputDocumento" accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.zip"
+                                style="display:none;">
                         </div>
+
                     </div>
 
                     <!-- Área de digitação -->
@@ -258,6 +269,36 @@
 
         </div>
     </div>
+
+
+<!-- Modal de Preview -->
+<div id="modalPreview" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-4 space-y-4 relative">
+
+        <!-- Botão fechar -->
+        <button id="fecharModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+
+        <h2 class="text-lg font-bold text-gray-800">Pré-visualizar envio</h2>
+
+        <!-- Preview com spinner -->
+        <div id="previewMidiaContainer" class="relative flex justify-center items-center bg-gray-100 p-4 rounded-lg max-h-60 overflow-auto">
+            <div id="spinnerPreview" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+                <svg class="animate-spin h-6 w-6 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+            </div>
+
+            <div id="previewMidia" class="w-full flex justify-center items-center"></div>
+        </div>
+
+        <input type="text" id="legendaMidia" placeholder="Escreva uma legenda (opcional)" class="w-full border rounded px-3 py-2 text-sm">
+
+        <button id="confirmarEnvio" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full">Enviar</button>
+    </div>
+</div>
+
+
 
     <script>
         window.ROTA_ENVIAR_MENSAGEM = "{{ route('kanban.enviar-mensagem') }}";

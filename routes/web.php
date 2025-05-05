@@ -8,6 +8,9 @@
     use App\Http\Controllers\Bots\BotController;
     use App\Http\Controllers\Calendario\EventoController;
     use App\Http\Controllers\Conversar\ConversasController;
+    use App\Http\Controllers\TesteMidiaController;
+
+
     //rotas de login
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -75,6 +78,9 @@
         Route::post('/zerar-mensagens-novas/{numero}', [ConversasController::class, 'zerarMensagensNovas'])->name('conversas.zerarMensagensNovas');
     });
 
-
+    // API EVOLUTION ENVIOS DE MENSAGENS
+    Route::middleware('auth')->group(function () {
     Route::post('/api/evolution/enviar-audio-base64', [EvolutionController::class, 'audioEnviar'])->name('teste.evolution.audio.enviar');
+    Route::post('/api/evolution/enviar-midia', [EvolutionController::class, 'enviarMidia'])->name('evolution.enviarMidia');
+    });
     

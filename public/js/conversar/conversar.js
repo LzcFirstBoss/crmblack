@@ -331,56 +331,105 @@ document.addEventListener('click', (e) => {
 // Rodar ao carregar para verificar se já tem conteúdo
 atualizarBorda();
 
-const btnEmoji = document.getElementById('btnEmoji');
-const emojiPickerContainer = document.getElementById('emojiPicker');
-const inputMensagemEmoji = document.getElementById('input-mensagem');
+// ------------------- ANEXOS -------------------
+document.getElementById('btnAnexarFotoVideo').addEventListener('click', () => document.getElementById('inputFotoVideo').click());
+document.getElementById('btnAnexarAudio').addEventListener('click', () => document.getElementById('inputAudio').click());
+document.getElementById('btnAnexarDocumento').addEventListener('click', () => document.getElementById('inputDocumento').click());
 
-// Toggle do picker
-btnEmoji.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (emojiPickerContainer.classList.contains('hidden')) {
-        emojiPickerContainer.classList.remove('hidden');
-        emojiPickerContainer.innerHTML = '';
+document.getElementById('inputFotoVideo').addEventListener('change', e => handleFile(e, e.target.files[0].type.startsWith('video/') ? 'video' : 'image'));
+document.getElementById('inputAudio').addEventListener('change', e => handleFile(e, 'audio'));
+document.getElementById('inputDocumento').addEventListener('change', e => handleFile(e, 'document'));
 
-        const picker = new EmojiMart.Picker({
-            onEmojiSelect: (emoji) => {
-                insertEmoji(emoji.native);
-                // NÃO FECHA MAIS AO ESCOLHER O EMOJI
-            },
-            set: 'apple',
-            locale: 'pt'
-        });
+let arquivoSelecionado = null;
+let tipoSelecionado = null;
+const modal = document.getElementById('modalPreview');
+const previewMidia = document.getElementById('previewMidia');
+const legendaMidia = document.getElementById('legendaMidia');
+const btnFecharModal = document.getElementById('fecharModal');
+const btnConfirmarEnvio = document.getElementById('confirmarEnvio');
 
-        emojiPickerContainer.appendChild(picker);
-    } else {
-        emojiPickerContainer.classList.add('hidden');
-    }
-});
-
-// Fechar ao clicar fora
-document.addEventListener('click', (e) => {
-    if (!emojiPickerContainer.contains(e.target) && e.target !== btnEmoji) {
-        emojiPickerContainer.classList.add('hidden');
-    }
-});
-
-function insertEmoji(emoji) {
-    inputMensagemEmoji.focus();
-
-    const range = document.createRange();
-    range.selectNodeContents(inputMensagemEmoji);
-    range.collapse(false);
-
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-
-    const emojiNode = document.createTextNode(emoji);
-    range.insertNode(emojiNode);
-
-    range.setStartAfter(emojiNode);
-    sel.removeAllRanges();
-    sel.addRange(range);
+function handleFile(event, tipo) {
+    const file = event.target.files[0];
+    if (!file) return;
+    abrirModalPreview(file, tipo);
 }
 
+function abrirModalPreview(file, tipo) {
+    arquivoSelecionado = file;
+    tipoSelecionado = tipo;
+    legendaMidia.value = '';
+    previewMidia.innerHTML = '';
+
+    document.getElementById('spinnerPreview').classList.remove('hidden');
+
+    const url = URL.createObjectURL(file);
+    let midiaElement = null;
+
+    if (tipo === 'image') {
+        midiaElement = document.createElement('img');
+        midiaElement.src = url;
+        midiaElement.classList.add('max-h-56', 'rounded', 'mx-auto');
+
+    } else if (tipo === 'video') {
+        midiaElement = document.createElement('video');
+        midiaElement.src = url;
+        midiaElement.controls = true;
+        midiaElement.classList.add('max-h-56', 'rounded', 'mx-auto');
+
+    } else if (tipo === 'audio') {
+        midiaElement = document.createElement('audio');
+        midiaElement.src = url;
+        midiaElement.controls = true;
+        midiaElement.classList.add('w-full');
+
+    } else {
+        const icon = document.createElement('div');
+        icon.classList.add('text-6xl', 'text-gray-400');
+        icon.innerHTML = '<i class="bi bi-file-earmark-text"></i>';
+        previewMidia.appendChild(icon);
+
+        const nome = document.createElement('p');
+        nome.textContent = file.name;
+        nome.classList.add('text-sm', 'mt-2', 'text-center');
+        previewMidia.appendChild(nome);
+
+        document.getElementById('spinnerPreview').classList.add('hidden');
+        modal.classList.remove('hidden');
+        legendaMidia.focus();
+        return;
+    }
+
+    // Adiciona na tela
+    previewMidia.appendChild(midiaElement);
+    modal.classList.remove('hidden');
+    legendaMidia.focus(); // FOCO NO INPUT
+
+    // Força um delay de 200ms para sumir o spinner (garante que vai funcionar)
+    setTimeout(() => {
+        document.getElementById('spinnerPreview').classList.add('hidden');
+    }, 200);
+}
+
+
+btnFecharModal.addEventListener('click', () => modal.classList.add('hidden'));
+
+btnConfirmarEnvio.addEventListener('click', () => {
+    if (!arquivoSelecionado) return;
+
+    const formData = new FormData();
+    formData.append('numero', numeroAtualSelecionado);
+    formData.append('arquivo', arquivoSelecionado);
+    formData.append('mediatype', tipoSelecionado);
+    formData.append('caption', legendaMidia.value);
+
+    fetch("/api/evolution/enviar-midia", {
+        method: "POST",
+        headers: { "X-CSRF-TOKEN": window.CSRF_TOKEN },
+        body: formData
+    }).then(res => res.json())
+    .then(() => {
+        modal.classList.add('hidden');
+        carregarNovasMensagens();
+    });
+});
 
