@@ -11,7 +11,7 @@ let intervaloTempo = null;
 // Conectar WebSocket
 function conectarWebSocket() {
     const token = window.WEBSOCKET_TOKEN;
-    socket = new WebSocket(`ws://localhost:3000?token=${token}`);
+    socket = new WebSocket(`wss://wb.zabulonmarketing.com.br?token=${token}`);
 
     socket.onopen = () => console.log('Conectado ao WebSocket');
     socket.onmessage = (event) => {
