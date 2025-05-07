@@ -25,6 +25,6 @@ class DashboardController extends Controller
         // Agendamentos (por enquanto manual)
         $agendamentos = Evento::whereDate('inicio', Carbon::today())->count();
 
-        return view('user.index', compact('leadsHoje', 'leadsTotal', 'botAtivo', 'agendamentos', 'atividades'));
+        return view('user.index', compact('leadsHoje', 'leadsTotal', 'botAtivo', 'agendamentos'));
     }
 }
