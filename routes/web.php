@@ -10,6 +10,7 @@
     use App\Http\Controllers\Calendario\EventoController;
     use App\Http\Controllers\Conversar\ConversasController;
     use App\Http\Controllers\TesteMidiaController;
+    use App\Http\Controllers\Dashboard\DashboardController;
 
 
     //rotas de login
@@ -18,9 +19,9 @@
 
     //rotas padrão
     Route::middleware('auth')->group(function () {
-        Route::get('/', function () {return view('user.index');});
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-        Route::get('/dashboard', function () {return view('user.index');})->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     });
 
     //Kanban - crm
