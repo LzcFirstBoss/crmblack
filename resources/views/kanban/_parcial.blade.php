@@ -19,13 +19,45 @@
         @foreach ($mensagens[$coluna->id] ?? [] as $mensagem)
         <div class="kanban-card" data-id="{{ $mensagem->id }}">
             <div class="kanban-card-header">
-                <a href="{{ route('kanban.historico', $mensagem->numero_cliente) }}" class="hover:underline text-orange-600 text-xs font-semibold">
-                    {{ $mensagem->numero_cliente }} <i class="bi bi-arrow-right-circle"></i>
-                </a>
+                <a href="{{ url('/conversar') }}?numero={{ $mensagem->numero_cliente }}" class="hover:underline text-orange-600 text-xs font-semibold" target="_blank">
+                    <i class="bi bi-whatsapp"></i>    {{ $mensagem->numero_cliente }} 
+                </a>                
             </div>
+            @php
+            $preview = $mensagem->mensagem_enviada;
+            
+            // Definir remetente
+            if ($mensagem->bot) {
+                $remetente = "Bot";
+            } elseif ($mensagem->enviado_por_mim) {
+                // Verifica se tem usuário associado
+                if ($mensagem->usuario) {
+                    $remetente = "({$mensagem->usuario->name})";
+                } else {
+                    $remetente = "Usuário";
+                }
+            } else {
+                $remetente = "Cliente";
+            }
+            
+            // Definir o preview baseado no conteúdo
+            if (preg_match('/uploads\/.*\.(jpg|jpeg|png|gif)$/i', $preview)) {
+                $preview = '<i class="bi bi-card-image"></i> Imagem';
+            } elseif (preg_match('/uploads\/.*\.(mp3|ogg|wav)$/i', $preview)) {
+                $preview = '<i class="bi bi-music-note-beamed"></i> Áudio';
+            } elseif (preg_match('/uploads\/.*\.(mp4|mov|avi)$/i', $preview)) {
+                $preview = '<i class="bi bi-camera-reels"></i> Vídeo';
+            } elseif (preg_match('/uploads\/.*\.(pdf|docx?|xlsx?)$/i', $preview)) {
+                $preview = '<i class="bi bi-file-earmark-text"></i> Documento';
+            } else {
+                $preview = e(Str::limit($preview, 100));
+            }
+            @endphp
+            
             <div class="kanban-card-body">
-                {{ Str::limit($mensagem->mensagem_enviada, 100) }}
+                <strong>{{ $remetente }}:</strong> {!! $preview !!}
             </div>
+            
             <div class="kanban-card-footer text-right text-xs text-gray-400 mt-2">
                 {{ $mensagem->created_at->format('d/m H:i:s') }}
             </div>

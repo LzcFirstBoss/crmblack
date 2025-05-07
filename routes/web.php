@@ -1,6 +1,7 @@
     <?php
     use Illuminate\Support\Facades\Route;
     use App\Http\Controllers\Auth\AuthController;
+    use Illuminate\Support\Facades\Request;
     use App\Http\Controllers\Kanban\KanbanController;
     use App\Http\Controllers\Kanban\StatusController;
     use App\Http\Controllers\Kanban\EvolutionController;
@@ -42,9 +43,6 @@
 
         // Envia mensagem pela api evolution
         Route::post('/kanban/enviar-mensagem', [EvolutionController::class, 'enviarMensagem'])->name('kanban.enviar-mensagem');
-
-        // Desativar/ativar bot
-        Route::get('/cliente/bot/alternar', [HistoricoConversaController::class, 'alternar'])->name('cliente.alternarBot');
     });
 
     // configs whatsapp
@@ -80,7 +78,9 @@
 
     // API EVOLUTION ENVIOS DE MENSAGENS
     Route::middleware('auth')->group(function () {
-    Route::post('/api/evolution/enviar-audio-base64', [EvolutionController::class, 'audioEnviar'])->name('teste.evolution.audio.enviar');
-    Route::post('/api/evolution/enviar-midia', [EvolutionController::class, 'enviarMidia'])->name('evolution.enviarMidia');
+        Route::post('/api/evolution/enviar-audio-base64', [EvolutionController::class, 'audioEnviar'])->name('teste.evolution.audio.enviar');
+        Route::post('/api/evolution/enviar-midia', [EvolutionController::class, 'enviarMidia'])->name('evolution.enviarMidia');
     });
+
+    
     

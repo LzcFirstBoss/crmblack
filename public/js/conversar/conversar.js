@@ -8,6 +8,15 @@ let cancelado = false;
 let tempoGravado = 0;
 let intervaloTempo = null;
 
+// Verificar se veio número pela URL
+const urlParams = new URLSearchParams(window.location.search);
+const numeroSelecionadoInicial = urlParams.get('numero');
+
+if (numeroSelecionadoInicial) {
+    abrirConversa(numeroSelecionadoInicial);
+}
+
+
 // Conectar WebSocket
 function conectarWebSocket() {
     const token = window.WEBSOCKET_TOKEN;
@@ -27,7 +36,21 @@ conectarWebSocket();
 function abrirConversa(numero) {
     numeroAtualSelecionado = numero;
 
-    document.getElementById('titulo-contato').innerText = numero;
+    document.getElementById('titulo-contato').innerHTML = `
+    <div class="flex items-center gap-3">
+        <span class="text-lg font-bold">${numero}</span>
+        <button id="botToggle" class="flex items-center gap-2 px-3 py-1 rounded-full text-white text-xs bg-gray-400 shadow-sm hover:brightness-90 transition">
+            Carregando...
+        </button>
+    </div>
+`;
+
+
+    // Buscar status atual do bot
+    fetch('/api/bot/status/' + numero)
+        .then(response => response.json())
+        .then(data => atualizarBotButton(data.botativo));
+
     document.getElementById('area-input').classList.remove('hidden');
     document.getElementById('mensagem-inicial').classList.add('hidden');
     document.getElementById('mensagens-chat').classList.remove('hidden');
@@ -49,6 +72,30 @@ function abrirConversa(numero) {
         headers: { 'X-CSRF-TOKEN': window.CSRF_TOKEN }
     }).then(atualizarListaContatos);
 }
+
+function atualizarBotButton(ativo) {
+    const botButton = document.getElementById('botToggle');
+    botButton.classList.remove('bg-red-600', 'bg-green-600');
+    botButton.classList.add(ativo ? 'bg-red-600' : 'bg-green-600');
+    botButton.innerHTML = `<i class="bi bi-power text-sm"></i> ${ativo ? 'Desligar Bot' : 'Ligar Bot'}`;
+
+    botButton.onclick = () => {
+        botButton.disabled = true;
+        botButton.innerHTML = '<i class="bi bi-hourglass-split animate-spin text-sm"></i> Atualizando...';
+
+        fetch('/api/bot/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ numero: numeroAtualSelecionado })
+        })
+        .then(response => response.json())
+        .then(data => {
+            atualizarBotButton(data.botativo);
+        });
+    };
+}
+
+
 
 function carregarNovasMensagens() {
     fetch('/conversar/' + numeroAtualSelecionado)

@@ -17,8 +17,7 @@ class KanbanController extends Controller
     public function index()
     {
         $sub = Mensagem::select(DB::raw('MAX(id) as id'))
-            ->where('enviado_por_mim', false) // carregar só a ultima mensagens de clientes
-            ->groupBy('numero_cliente');
+            ->groupBy('numero_cliente'); // agora pegando a última mensagem geral (não só do cliente)
     
         $mensagens = Mensagem::whereIn('id', $sub->pluck('id'))
             ->orderBy('data_e_hora_envio', 'desc')
@@ -29,6 +28,7 @@ class KanbanController extends Controller
     
         return view('kanban.index', compact('mensagens', 'colunas'));
     }
+    
 
     public function atualizarStatus(Request $request)
     {

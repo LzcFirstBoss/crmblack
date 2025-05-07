@@ -18,7 +18,6 @@
     <div class="flex {{ $isMe ? 'justify-end' : 'justify-start' }} mb-3">
         <div class="max-w-[75%] p-3 rounded-xl shadow-sm text-sm
             {{ $isClient ? 'bg-gray-200 text-gray-800' : ($isBot ? 'bg-blue-100 text-blue-900' : 'bg-orange-100 text-orange-900') }}">
-
             @if ($ehImagem || $ehAudio || $ehVideo)
             <div class="{{ $ehImagem || $ehVideo ? 'media-clickable cursor-pointer' : '' }}" data-type="{{ $ehImagem ? 'image' : ($ehVideo ? 'video' : '') }}" data-src="{{ $caminho }}">
                 @if ($ehImagem)
