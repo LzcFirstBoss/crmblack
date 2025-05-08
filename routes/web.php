@@ -36,12 +36,6 @@
 
     //Historico de conversas abertas
     Route::middleware('auth')->group(function () {
-        // Página com o histórico completo de um número
-        Route::get('/kanban/historico/{numero}', [HistoricoConversaController::class, 'historico'])->name('kanban.historico');
-
-        // Atualização em tempo real via AJAX
-        Route::get('/kanban/historico/{numero}/atualizar', [HistoricoConversaController::class, 'atualizarHistorico']);
-
         // Envia mensagem pela api evolution
         Route::post('/kanban/enviar-mensagem', [EvolutionController::class, 'enviarMensagem'])->name('kanban.enviar-mensagem');
     });

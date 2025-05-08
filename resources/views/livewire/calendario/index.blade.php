@@ -214,7 +214,7 @@
 
                         @if ($eventoSelecionado->numerocliente)
                             <div class="text-right">
-                                <a href="{{ url('/kanban/historico/' . str_replace('@s.whatsapp.net', '', $eventoSelecionado->numerocliente)) }}"
+                                <a href="{{ url('/conversar') }}?numero={{ str_replace('@s.whatsapp.net', '', $eventoSelecionado->numerocliente) }}"
                                     class="inline-flex items-center gap-2 text-sm px-4 py-2 border border-green-600 rounded text-green-600 hover:bg-green-600 hover:text-white transition">
                                     <i class="bi bi-whatsapp"></i> Abrir Conversa
                                 </a>
