@@ -81,19 +81,37 @@
                 {{-- Modo CRIAR --}}
                 @if ($modoCriar)
                     <form wire:submit.prevent="salvarEvento" class="space-y-4">
-                        <input type="text" wire:model.defer="titulo" placeholder="Título"
-                            class="w-full border rounded px-3 py-2 focus:ring-orange-400" required>
 
-                        <textarea wire:model.defer="descricao" placeholder="Descrição"
-                            class="w-full border rounded px-3 py-2 focus:ring-orange-400"></textarea>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Título do Evento</label>
+                            <input type="text" wire:model.defer="titulo" placeholder="Digite o título"
+                                class="w-full border rounded px-3 py-2 focus:ring-orange-400" required>
+                        </div>
 
-                        <input type="datetime-local" wire:model.defer="inicio"
-                            class="w-full border rounded px-3 py-2 focus:ring-orange-400" required>
-                        <input type="datetime-local" wire:model.defer="fim"
-                            class="w-full border rounded px-3 py-2 focus:ring-orange-400" required>
-                        <input type="text" wire:model.defer="numerocliente"
-                            placeholder="Número do Cliente (ex: 5564...@s.whatsapp.net)"
-                            class="w-full border rounded px-3 py-2 focus:ring-orange-400" required>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                            <textarea wire:model.defer="descricao" placeholder="Descreva o evento"
+                                class="w-full border rounded px-3 py-2 focus:ring-orange-400"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Início do Evento</label>
+                            <input type="datetime-local" wire:model.defer="inicio"
+                                class="w-full border rounded px-3 py-2 focus:ring-orange-400" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fim do Evento</label>
+                            <input type="datetime-local" wire:model.defer="fim"
+                                class="w-full border rounded px-3 py-2 focus:ring-orange-400" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Número do Cliente</label>
+                            <input type="text" wire:model.defer="numerocliente"
+                                placeholder="Exemplo: 5564...@s.whatsapp.net"
+                                class="w-full border rounded px-3 py-2 focus:ring-orange-400" required>
+                        </div>
 
                         <div class="flex justify-end gap-3 pt-4">
                             <button type="button" wire:click="fecharModal"
