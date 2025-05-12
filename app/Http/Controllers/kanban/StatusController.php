@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Kanban;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Kanban\Status;
-use App\Models\Webhook\Mensagem;
+use App\Models\Cliente\Cliente;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -33,8 +33,6 @@ class StatusController extends Controller
         return response()->json(['status' => 'criado com sucesso']);
     }
     
-     
-    
 
     public function destroy($id)
     {
@@ -48,7 +46,7 @@ class StatusController extends Controller
         $aguardando = Status::where('fixo', true)->first();
 
         // Move todas as mensagens para “Aguardando”
-        Mensagem::where('status_id', $status->id)->update([
+        Cliente::where('status_id', $status->id)->update([
             'status_id' => $aguardando->id
         ]);
 

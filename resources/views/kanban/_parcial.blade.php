@@ -17,11 +17,22 @@
     <!-- ÁREA DOS CARDS COM FUNDO COLORIDO SUAVE -->
     <div class="kanban-column min-h-[200px] space-y-2 p-3" id="status-{{ $coluna->id }}">
         @foreach ($mensagens[$coluna->id] ?? [] as $mensagem)
-        <div class="kanban-card" data-id="{{ $mensagem->id }}">
+        <div class="kanban-card" data-id="{{ $mensagem->id }}" data-numero="{{ $mensagem->numero_cliente }}">
             <div class="kanban-card-header">
-                <a href="{{ url('/conversar') }}?numero={{ $mensagem->numero_cliente }}" class="hover:underline text-orange-600 text-xs font-semibold" target="_blank">
-                    <i class="bi bi-whatsapp"></i>    {{ $mensagem->numero_cliente }} 
-                </a>                
+                <div class="flex items-center justify-between">
+                    <a href="{{ url('/conversar') }}?numero={{ $mensagem->numero_cliente }}" class="hover:underline text-orange-600 text-xs font-semibold" target="_blank">
+                        <i class="bi bi-whatsapp"></i> {{ $mensagem->numero_cliente }}
+                    </a>
+
+<div id="bolinha-{{ $mensagem->numero_cliente }}">
+    @if($mensagem->cliente?->qtd_mensagens_novas > 0)
+        <span class="notificacao-bolinha ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+            {{ $mensagem->cliente->qtd_mensagens_novas }}
+        </span>
+    @endif
+</div>
+
+                </div>
             </div>
             @php
             $preview = $mensagem->mensagem_enviada;

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Webhook\Mensagem;
 use Illuminate\Support\Facades\DB;
 use App\Models\Kanban\Status;
+use App\Models\Cliente\Cliente;
 use Illuminate\Support\Facades\Http;
 
 
@@ -14,51 +15,96 @@ use Illuminate\Support\Facades\Http;
 class KanbanController extends Controller
 {
 
-    public function index()
-    {
-        $sub = Mensagem::select(DB::raw('MAX(id) as id'))
-            ->groupBy('numero_cliente'); // agora pegando a última mensagem geral (não só do cliente)
-    
-        $mensagens = Mensagem::whereIn('id', $sub->pluck('id'))
-            ->orderBy('data_e_hora_envio', 'desc')
-            ->get()
-            ->groupBy('status_id');
-    
-        $colunas = Status::orderBy('id')->get();
-    
-        return view('kanban.index', compact('mensagens', 'colunas'));
-    }
+public function index()
+{
+    $sub = Mensagem::select(DB::raw('MAX(id) as id'))
+        ->groupBy('numero_cliente');
+
+    $ultimasMensagens = Mensagem::whereIn('id', $sub->pluck('id'))->get();
+
+    $colunas = Status::orderBy('id')->get();
+    $statusValidos = $colunas->pluck('id')->toArray();
+
+    $clientes = Cliente::all()->keyBy(function ($c) {
+        return str_replace('@s.whatsapp.net', '', $c->telefoneWhatsapp);
+    });
+
+    $mensagens = $ultimasMensagens->map(function ($mensagem) use ($clientes, $statusValidos) {
+        $numero = $mensagem->numero_cliente;
+        $cliente = $clientes[$numero] ?? null;
+
+        if (!$cliente || !in_array($cliente->status_id, $statusValidos)) {
+            return null;
+        }
+
+        $mensagem->cliente = $cliente;
+        $mensagem->status_id = $cliente->status_id;
+        return $mensagem;
+    })
+    ->filter()
+    ->sortByDesc('data_e_hora_envio')
+    ->groupBy(fn($msg) => $msg->cliente->status_id);
+
+    return view('kanban.index', compact('mensagens', 'colunas'));
+}
+
+
     
 
     public function atualizarStatus(Request $request)
     {
         $mensagem = Mensagem::find($request->id);
-    
+
         if ($mensagem) {
-            $mensagem->status_id = $request->status; // ← ATENÇÃO AQUI
-            $mensagem->save();
-    
+            $numero = $mensagem->numero_cliente;
+            $cliente = Cliente::where('telefoneWhatsapp', $numero . '@s.whatsapp.net')->first();
+
+            if ($cliente) {
+                $cliente->status_id = $request->status;
+                $cliente->save();
+            }
+
             return response()->json(['status' => 'ok']);
         }
-    
+
         return response()->json(['erro' => 'Mensagem não encontrada'], 404);
     }
 
     public function parcial()
     {
         $sub = Mensagem::select(DB::raw('MAX(id) as id'))
-            ->where('enviado_por_mim', false) // só mensagens de clientes
             ->groupBy('numero_cliente');
-    
-        $mensagens = Mensagem::whereIn('id', $sub->pluck('id'))
-            ->orderBy('data_e_hora_envio', 'desc')
-            ->get()
-            ->groupBy('status_id');
-    
+
+        $ultimasMensagens = Mensagem::whereIn('id', $sub->pluck('id'))->get();
+
+        $statusValidos = Status::pluck('id')->toArray();
+
+        // → Aqui criamos um map de clientes para acesso rápido
+        $clientes = Cliente::all()->keyBy(function ($c) {
+            return str_replace('@s.whatsapp.net', '', $c->telefoneWhatsapp);
+        });
+
+        $mensagens = $ultimasMensagens->map(function ($mensagem) use ($statusValidos, $clientes) {
+            $numero = $mensagem->numero_cliente;
+            $cliente = $clientes[$numero] ?? null;
+
+            if (!$cliente || !in_array($cliente->status_id, $statusValidos)) {
+                return null;
+            }
+
+            $mensagem->status_id = $cliente->status_id;
+            $mensagem->cliente = $cliente; // ← adiciona o cliente como objeto para acessar direto no Blade
+            return $mensagem;
+        })
+        ->filter()
+        ->sortByDesc('data_e_hora_envio')
+        ->groupBy('status_id');
+
         $colunas = Status::orderBy('id')->get();
-    
+
         return view('kanban._parcial', compact('mensagens', 'colunas'));
     }
+
 
     public function atualizarCor(Request $request, $id)
     {

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Webhook\Mensagem;
 use App\Models\Cliente\Cliente;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class ConversasController extends Controller
 {
@@ -74,6 +74,14 @@ class ConversasController extends Controller
         if ($cliente) {
             $cliente->qtd_mensagens_novas = 0;
             $cliente->save();
+
+            // Notifica o WebSocket
+            Http::post('http://localhost:3001/enviar', [
+                'evento' => 'kanban:zerarNotificacao',
+                'dados' => [
+                    'numero' => $numero  // número sem @s.whatsapp.net
+                ]
+            ]);
         }
 
         return response()->json(['status' => 'ok']);

@@ -14,6 +14,7 @@ class Cliente extends Model
         'email',
         'qtd_mensagens_novas',
         'nome',
+        'status_id',
     ];
 
     protected $casts = [

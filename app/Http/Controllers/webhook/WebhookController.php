@@ -42,12 +42,13 @@ class WebhookController extends Controller
                 $cliente = Cliente::where('telefoneWhatsapp', $numeroCliente)->first();
             
                 if (!$cliente) {
-                    // Se não existe, cria com botativo e nome
+                    // Se não existe, cria com botativo e nome e status id como 1 (Aguardando)
                     $cliente = Cliente::create([
                         'telefoneWhatsapp'    => $numeroCliente,
                         'nome'                => $mensagem['nome'] ?? null,
                         'botativo'            => filter_var($mensagem['botativo'] ?? false, FILTER_VALIDATE_BOOLEAN),
                         'qtd_mensagens_novas' => 1,
+                        'status_id' => 1,
                     ]);
                 } else {
                     // Se já existe, só incrementa as mensagens novas
@@ -76,14 +77,23 @@ class WebhookController extends Controller
     private function notificarWebSocket(Mensagem $mensagem)
     {
         try {
+            // Buscar o cliente correspondente
+            $cliente = Cliente::where('telefoneWhatsapp', $mensagem->numero_cliente . '@s.whatsapp.net')->first();
+
+            // Enviar via WebSocket
             Http::post('http://localhost:3001/enviar', [
-                'evento' => 'novaMensagem',
+                'evento' => 'kanban:novaMensagem',
                 'dados' => [
+                    'id' => $mensagem->id,
                     'numero' => $mensagem->numero_cliente,
-                    'mensagem' => $mensagem->mensagem_enviada,
-                    'data_e_hora_envio' => $mensagem->data_e_hora_envio,
+                    'conteudo' => $mensagem->mensagem_enviada,
                     'enviado_por_mim' => $mensagem->enviado_por_mim,
-                ],
+                    'bot' => $mensagem->bot,
+                    'usuario' => optional($mensagem->usuario)->name,
+                    'status_id' => $cliente?->status_id,
+                    'mensagens_novas' => $cliente?->qtd_mensagens_novas ?? 0, // ← BOLINHA DE NOTIFICAÇÃO
+                    'created_at' => \Carbon\Carbon::parse($mensagem->data_e_hora_envio)->format('d/m H:i:s'),
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao enviar WebSocket: ' . $e->getMessage());
