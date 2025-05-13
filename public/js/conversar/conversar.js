@@ -96,6 +96,7 @@ function atualizarBotButton(ativo) {
 }
 
 
+
 function carregarNovasMensagens() {
     fetch('/conversar/' + numeroAtualSelecionado)
         .then(res => res.text())
@@ -103,18 +104,7 @@ function carregarNovasMensagens() {
             document.getElementById('mensagens-chat').innerHTML = html;
             document.getElementById('chat-mensagens')?.scrollTo(0, document.getElementById('chat-mensagens').scrollHeight);
         });
-
-    fetch('/zerar-mensagens-novas/' + numeroAtualSelecionado, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': window.CSRF_TOKEN }
-    }).then(() => {
-        socket.send(JSON.stringify({
-            evento: 'kanban:zerarNotificacao',
-            dados: { numero: numeroAtualSelecionado }
-        }));
-    });
 }
-
 
 function atualizarListaContatos() {
     fetch('/conversar-parcial')
