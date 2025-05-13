@@ -114,30 +114,51 @@ function atualizarListaContatos() {
             if (numeroAtualSelecionado) {
                 document.getElementById('contato-' + numeroAtualSelecionado)?.classList.add('bg-gray-200');
             }
+            filtrarContatos(); // reaplica o filtro após atualizar a lista
         });
 }
+
 
 setInterval(atualizarListaContatos, 2000);
 
 function enviarMensagem() {
     const mensagemInput = document.getElementById('input-mensagem');
-    const mensagem = mensagemInput.textContent.trim(); // PEGAR O TEXTO CERTO
+    let mensagem = mensagemInput.innerHTML.trim();
+
+    // Converter HTML para \n
+    mensagem = mensagem
+        .replace(/<div><br><\/div>/g, '\n')
+        .replace(/<div>/g, '\n')
+        .replace(/<\/div>/g, '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/<[^>]+>/g, '');
 
     if (!mensagem) return;
 
-    mensagemInput.textContent = ''; // LIMPAR O CAMPO
+    mensagemInput.textContent = '';
     mensagemInput.focus();
 
     fetch(window.ROTA_ENVIAR_MENSAGEM, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': window.CSRF_TOKEN },
-        body: JSON.stringify({ numero: numeroAtualSelecionado, mensagem })
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': window.CSRF_TOKEN
+        },
+        body: JSON.stringify({
+            numero: numeroAtualSelecionado,
+            mensagem: mensagem
+        })
     }).then(res => res.json())
-    .then(data => {
+      .then(data => {
         if (data.status === 'Mensagem enviada com sucesso') carregarNovasMensagens();
         else alert(data.erro || 'Erro ao enviar a mensagem.');
     });
 }
+
 
 // -------------------- ÁUDIO --------------------
 const btnIniciarGravacao = document.getElementById('btnIniciarGravacao');
@@ -353,12 +374,6 @@ function atualizarBorda() {
 inputMensagemDiv.addEventListener('input', atualizarBorda);
 inputMensagemDiv.addEventListener('scroll', atualizarBorda);
 
-document.addEventListener('click', (e) => {
-    if (!inputMensagemDiv.contains(e.target)) {
-        window.getSelection().removeAllRanges();
-    }
-});
-
 atualizarBorda();
 
 
@@ -370,10 +385,21 @@ inputMensagem.addEventListener('scroll', atualizarBorda);
 
 // Remover seleção indesejada quando clica fora do campo
 document.addEventListener('click', (e) => {
-    if (!inputMensagem.contains(e.target)) {
-        window.getSelection().removeAllRanges();
+    const ignorar = [
+        '#input-mensagem',
+        '#pesquisa-contato',
+        '#legendaMidia',
+        '#emojiPicker',
+        '#btnEmoji'
+    ];
+
+    for (let seletor of ignorar) {
+        if (e.target.closest(seletor)) return;
     }
+
+    window.getSelection().removeAllRanges();
 });
+
 
 // Rodar ao carregar para verificar se já tem conteúdo
 atualizarBorda();
@@ -688,4 +714,19 @@ function formatarTempo(segundos) {
     const m = Math.floor(segundos / 60);
     const s = segundos % 60;
     return `${m}:${s < 10 ? '0' + s : s}`;
+}
+
+function filtrarContatos() {
+    const termo = document.getElementById('pesquisa-contato').value.toLowerCase();
+    const contatos = document.querySelectorAll('#lista-contatos-itens .contato');
+
+    contatos.forEach(contato => {
+        const numero = contato.querySelector('.numero-cliente').textContent.toLowerCase();
+
+        if (numero.includes(termo)) {
+            contato.style.display = 'flex'; // Mostrar se bater
+        } else {
+            contato.style.display = 'none'; // Esconder se não bater
+        }
+    });
 }

@@ -146,7 +146,6 @@
                     </div>
                 @endforeach
             </div>
-
         </div>
 
         <!-- Área da Conversa -->
