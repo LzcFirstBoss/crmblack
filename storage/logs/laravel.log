@@ -21142,3 +21142,6 @@ HINT:  Perhaps you meant to reference the column "Clientes.telefoneWhatsapp". (S
 #70 D:\\laragon\\www\\crmzabulonproducao\\server.php(21): require_once('D:\\\\laragon\\\\www\\\\...')
 #71 {main}
 "} 
+[2025-05-13 10:22:30] production.ERROR: Erro ao notificar WebSocket: cURL error 3: URL rejected: Malformed input to a URL function (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)  
+[2025-05-13 10:23:00] production.ERROR: Erro ao notificar WebSocket: cURL error 3: URL rejected: Malformed input to a URL function (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)  
+[2025-05-13 10:23:15] production.ERROR: Erro ao notificar WebSocket: cURL error 3: URL rejected: Malformed input to a URL function (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)  

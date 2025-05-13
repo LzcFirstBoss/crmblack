@@ -15,38 +15,38 @@ use Illuminate\Support\Facades\Http;
 class KanbanController extends Controller
 {
 
-public function index()
-{
-    $sub = Mensagem::select(DB::raw('MAX(id) as id'))
-        ->groupBy('numero_cliente');
+    public function index()
+    {
+        $sub = Mensagem::select(DB::raw('MAX(id) as id'))
+            ->groupBy('numero_cliente');
 
-    $ultimasMensagens = Mensagem::whereIn('id', $sub->pluck('id'))->get();
+        $ultimasMensagens = Mensagem::whereIn('id', $sub->pluck('id'))->get();
 
-    $colunas = Status::orderBy('id')->get();
-    $statusValidos = $colunas->pluck('id')->toArray();
+        $colunas = Status::orderBy('id')->get();
+        $statusValidos = $colunas->pluck('id')->toArray();
 
-    $clientes = Cliente::all()->keyBy(function ($c) {
-        return str_replace('@s.whatsapp.net', '', $c->telefoneWhatsapp);
-    });
+        $clientes = Cliente::all()->keyBy(function ($c) {
+            return str_replace('@s.whatsapp.net', '', $c->telefoneWhatsapp);
+        });
 
-    $mensagens = $ultimasMensagens->map(function ($mensagem) use ($clientes, $statusValidos) {
-        $numero = $mensagem->numero_cliente;
-        $cliente = $clientes[$numero] ?? null;
+        $mensagens = $ultimasMensagens->map(function ($mensagem) use ($clientes, $statusValidos) {
+            $numero = $mensagem->numero_cliente;
+            $cliente = $clientes[$numero] ?? null;
 
-        if (!$cliente || !in_array($cliente->status_id, $statusValidos)) {
-            return null;
-        }
+            if (!$cliente || !in_array($cliente->status_id, $statusValidos)) {
+                return null;
+            }
 
-        $mensagem->cliente = $cliente;
-        $mensagem->status_id = $cliente->status_id;
-        return $mensagem;
-    })
-    ->filter()
-    ->sortByDesc('data_e_hora_envio')
-    ->groupBy(fn($msg) => $msg->cliente->status_id);
+            $mensagem->cliente = $cliente;
+            $mensagem->status_id = $cliente->status_id;
+            return $mensagem;
+        })
+        ->filter()
+        ->sortByDesc('data_e_hora_envio')
+        ->groupBy(fn($msg) => $msg->cliente->status_id);
 
-    return view('kanban.index', compact('mensagens', 'colunas'));
-}
+        return view('kanban.index', compact('mensagens', 'colunas'));
+    }
 
 
     
@@ -103,16 +103,6 @@ public function index()
         $colunas = Status::orderBy('id')->get();
 
         return view('kanban._parcial', compact('mensagens', 'colunas'));
-    }
-
-
-    public function atualizarCor(Request $request, $id)
-    {
-        $status = Status::findOrFail($id);
-        $status->cor = $request->cor;
-        $status->save();
-
-        return response()->json(['status' => 'cor atualizada']);
     }
 
     public function historico($numero)

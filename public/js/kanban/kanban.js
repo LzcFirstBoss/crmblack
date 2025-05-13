@@ -94,7 +94,9 @@ const bolinhaHTML = (qtd) => `
                         <a href="/conversar?numero=${dados.numero}" class="hover:underline text-orange-600 text-xs font-semibold" target="_blank">
                             <i class="bi bi-whatsapp"></i> ${dados.numero}
                         </a>
-                        ${bolinha}
+                                        <div id="bolinha-${dados.numero}">
+                    ${dados.mensagens_novas > 0 ? bolinhaHTML(dados.mensagens_novas) : ''}
+                </div>
                     </div>
                 </div>
                 <div class="kanban-card-body">

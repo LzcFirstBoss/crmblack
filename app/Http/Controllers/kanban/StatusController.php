@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Kanban\Status;
 use App\Models\Cliente\Cliente;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 
 class StatusController extends Controller
@@ -30,6 +32,7 @@ class StatusController extends Controller
         $status->cor = $request->cor ?? '#ffffff';
         $status->save();
     
+        $this->notificarAtualizacaoKanban();
         return response()->json(['status' => 'criado com sucesso']);
     }
     
@@ -51,8 +54,34 @@ class StatusController extends Controller
         ]);
 
         $status->delete();
-
+        $this->notificarAtualizacaoKanban();
         return response()->json(['status' => 'removido com sucesso']);
+    }
+
+    
+    public function atualizarCor(Request $request, $id)
+    {
+        $status = Status::findOrFail($id);
+        $status->cor = $request->cor;
+        $status->save();
+
+        $status->cor = $request->cor;
+        $status->save();
+
+        $this->notificarAtualizacaoKanban();
+        return response()->json(['status' => 'cor atualizada']);
+    }
+
+    private function notificarAtualizacaoKanban()
+    {
+        try {
+            Http::post('http://localhost:3001/enviar', [
+                'evento' => 'kanban:atualizar',
+                'dados' => []
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao notificar WebSocket: ' . $e->getMessage());
+        }
     }
 }
 

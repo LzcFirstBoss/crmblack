@@ -1,15 +1,12 @@
     <?php
     use Illuminate\Support\Facades\Route;
     use App\Http\Controllers\Auth\AuthController;
-    use Illuminate\Support\Facades\Request;
     use App\Http\Controllers\Kanban\KanbanController;
     use App\Http\Controllers\Kanban\StatusController;
     use App\Http\Controllers\Kanban\EvolutionController;
-    use App\Http\Controllers\Historico\HistoricoConversaController;
     use App\Http\Controllers\Bots\BotController;
     use App\Http\Controllers\Calendario\EventoController;
     use App\Http\Controllers\Conversar\ConversasController;
-    use App\Http\Controllers\TesteMidiaController;
     use App\Http\Controllers\Dashboard\DashboardController;
 
 
@@ -31,18 +28,12 @@
         Route::get('/kanban/parcial', [KanbanController::class, 'parcial'])->name('kanban.parcial');
         Route::post('/kanban/status', [StatusController::class, 'store']);
         Route::delete('/kanban/status/{id}', [StatusController::class, 'destroy']);
-        Route::put('/kanban/status/{id}/cor', [KanbanController::class, 'atualizarCor']);
-    });
-
-    //Historico de conversas abertas
-    Route::middleware('auth')->group(function () {
-        // Envia mensagem pela api evolution
-        Route::post('/kanban/enviar-mensagem', [EvolutionController::class, 'enviarMensagem'])->name('kanban.enviar-mensagem');
+        Route::put('/kanban/status/{id}/cor', [StatusController::class, 'atualizarCor']);
     });
 
     // configs whatsapp
     Route::middleware('auth')->group(function () {
-        //conectar/desconectar
+        // Conectar/desconectar
         Route::get('/config', [EvolutionController::class, 'painelWhatsapp'])->name('evolution.qrcpde');
         Route::get('/evolution/conectar', [EvolutionController::class, 'conectarInstancia'])->name('evolution.conectar');
         Route::get('/evolution/status', [EvolutionController::class, 'verificarStatus'])->name('evolution.status.check');
@@ -73,6 +64,7 @@
 
     // API EVOLUTION ENVIOS DE MENSAGENS
     Route::middleware('auth')->group(function () {
+        Route::post('/kanban/enviar-mensagem', [EvolutionController::class, 'enviarMensagem'])->name('kanban.enviar-mensagem');
         Route::post('/api/evolution/enviar-audio-base64', [EvolutionController::class, 'audioEnviar'])->name('teste.evolution.audio.enviar');
         Route::post('/api/evolution/enviar-midia', [EvolutionController::class, 'enviarMidia'])->name('evolution.enviarMidia');
     });
