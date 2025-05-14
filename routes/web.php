@@ -68,6 +68,3 @@
         Route::post('/api/evolution/enviar-audio-base64', [EvolutionController::class, 'audioEnviar'])->name('teste.evolution.audio.enviar');
         Route::post('/api/evolution/enviar-midia', [EvolutionController::class, 'enviarMidia'])->name('evolution.enviarMidia');
     });
-
-    
-    
