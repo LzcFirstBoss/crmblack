@@ -20,6 +20,7 @@ class Mensagem extends Model
         'enviado_por_mim',
         'usuario_id',
         'bot',
+        'status',
     ];
 
     protected $casts = [

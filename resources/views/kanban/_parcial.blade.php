@@ -54,7 +54,7 @@
             // Definir o preview baseado no conteúdo
             if (preg_match('/uploads\/.*\.(jpg|jpeg|png|gif)$/i', $preview)) {
                 $preview = '<i class="bi bi-card-image"></i> Imagem';
-            } elseif (preg_match('/uploads\/.*\.(mp3|ogg|wav)$/i', $preview)) {
+            } elseif (preg_match('/uploads\/.*\.(mp3|ogg|wav|webm)$/i', $preview)) {
                 $preview = '<i class="bi bi-music-note-beamed"></i> Áudio';
             } elseif (preg_match('/uploads\/.*\.(mp4|mov|avi)$/i', $preview)) {
                 $preview = '<i class="bi bi-camera-reels"></i> Vídeo';

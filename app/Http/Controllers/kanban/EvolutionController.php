@@ -141,30 +141,38 @@ class EvolutionController extends Controller
         try {
             $numeroRecebido = $request->input('numero');
             $mensagem = trim($request->input('mensagem'));
-    
-            // Limpar o número para uso interno (banco de dados)
-            $numeroLimpo = preg_replace('/\D/', '', $numeroRecebido); // Ex: 556499572510
-    
-            // Número formatado para enviar para Evolution
+
+            $numeroLimpo = preg_replace('/\D/', '', $numeroRecebido);
             $numeroEvolution = $numeroLimpo . '@s.whatsapp.net';
-    
+
             if (empty($numeroLimpo) || empty($mensagem)) {
                 return response()->json(['erro' => 'Número ou mensagem inválida.'], 400);
             }
-    
-            // Dados da API Evolution
+
+            // Primeiro salva no banco com status = false (0)
+            $mensagemSalva = Mensagem::create([
+                'numero_cliente' => $numeroLimpo,
+                'tipo_de_mensagem' => 'conversation',
+                'mensagem_enviada' => $mensagem,
+                'data_e_hora_envio' => now(),
+                'enviado_por_mim' => true,
+                'usuario_id' => auth()->id(),
+                'bot' => false,
+                'status' => false, // ainda não enviada
+            ]);
+
+            // Dados API Evolution
             $instance = env('EVOLUTION_INSTANCE_ID');
             $apiKey   = env('EVOLUTION_API_KEY');
             $server   = env('EVOLUTION_API_URL');
-    
+
             $url = "{$server}/message/sendText/{$instance}";
-    
             $payload = [
-                'number' => $numeroEvolution, // Aqui manda com @s.whatsapp.net para Evolution
+                'number' => $numeroEvolution,
                 'text'   => $mensagem
             ];
-    
-            // Envio para Evolution
+
+            // Envio via cURL
             $curl = curl_init();
             curl_setopt_array($curl, [
                 CURLOPT_URL => $url,
@@ -176,39 +184,30 @@ class EvolutionController extends Controller
                 ],
                 CURLOPT_POSTFIELDS => json_encode($payload),
             ]);
-    
+
             $response = curl_exec($curl);
             $erroCurl = curl_error($curl);
             curl_close($curl);
-    
+
             if ($erroCurl) {
                 return response()->json(['erro' => 'Erro ao conectar na API Evolution: ' . $erroCurl], 500);
             }
-    
+
             $resposta = json_decode($response, true);
-    
+
             if (isset($resposta['status']) && $resposta['status'] == 400) {
                 return response()->json([
                     'erro' => 'Erro da Evolution: ' . json_encode($resposta['response']['message'][0][0] ?? 'Erro desconhecido')
                 ], 400);
             }
-    
-            // Agora salvando o número LIMPO no banco
-            Mensagem::create([
-                'numero_cliente' => $numeroLimpo, // <- só o número, sem @s.whatsapp.net
-                'tipo_de_mensagem' => 'conversation',
-                'mensagem_enviada' => $mensagem,
-                'data_e_hora_envio' => now(),
-                'enviado_por_mim' => true,
-                'usuario_id' => auth()->id(),
-                'bot' => false,
-            ]);
-    
+
+            // Se chegou até aqui, mensagem foi enviada com sucesso → atualiza o status
+            $mensagemSalva->update(['status' => true]);
+
             return response()->json([
                 'status' => 'Mensagem enviada com sucesso',
                 'retorno' => $resposta
             ]);
-    
         } catch (\Exception $e) {
             return response()->json(['erro' => 'Erro interno: ' . $e->getMessage()], 500);
         }

@@ -125,7 +125,6 @@ function enviarMensagem() {
     const mensagemInput = document.getElementById('input-mensagem');
     let mensagem = mensagemInput.innerHTML.trim();
 
-    // Converter HTML para \n
     mensagem = mensagem
         .replace(/<div><br><\/div>/g, '\n')
         .replace(/<div>/g, '\n')
@@ -139,9 +138,24 @@ function enviarMensagem() {
 
     if (!mensagem) return;
 
+    // Resetar input
     mensagemInput.textContent = '';
     mensagemInput.focus();
 
+    // Adiciona a mensagem na tela com status "pendente"
+    const mensagensDiv = document.getElementById('mensagens-chat');
+    const mensagemHTML = `
+        <div class="flex justify-end mb-2">
+            <div class="relative rounded-2xl text-[15px] font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit" style="position: relative; background-color: #94ffc3; padding-top: 6px; padding-bottom: 4px;">
+                <span>${mensagem}</span>
+                <small class="block text-xs text-gray-500">enviando...</small>
+            </div>
+        </div>
+    `;
+    mensagensDiv.insertAdjacentHTML('beforeend', mensagemHTML);
+    document.getElementById('chat-mensagens')?.scrollTo(0, mensagensDiv.scrollHeight);
+
+    // Envia para a API
     fetch(window.ROTA_ENVIAR_MENSAGEM, {
         method: 'POST',
         headers: {
@@ -154,10 +168,15 @@ function enviarMensagem() {
         })
     }).then(res => res.json())
       .then(data => {
-        if (data.status === 'Mensagem enviada com sucesso') carregarNovasMensagens();
-        else alert(data.erro || 'Erro ao enviar a mensagem.');
+        if (data.status === 'Mensagem enviada com sucesso') {
+            // Atualiza as mensagens com status real (enviada = true)
+            carregarNovasMensagens();
+        } else {
+            alert(data.erro || 'Erro ao enviar a mensagem.');
+        }
     });
 }
+
 
 
 // -------------------- ÁUDIO --------------------
