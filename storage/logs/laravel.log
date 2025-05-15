@@ -21145,3 +21145,21 @@ HINT:  Perhaps you meant to reference the column "Clientes.telefoneWhatsapp". (S
 [2025-05-13 10:22:30] production.ERROR: Erro ao notificar WebSocket: cURL error 3: URL rejected: Malformed input to a URL function (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)  
 [2025-05-13 10:23:00] production.ERROR: Erro ao notificar WebSocket: cURL error 3: URL rejected: Malformed input to a URL function (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)  
 [2025-05-13 10:23:15] production.ERROR: Erro ao notificar WebSocket: cURL error 3: URL rejected: Malformed input to a URL function (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)  
+[2025-05-15 09:28:13] production.ERROR: Command ".\server.ph" is not defined. {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \".\\server.ph\" is not defined. at D:\\laragon\\www\\crmzabulonproducao\\vendor\\symfony\\console\\Application.php:720)
+[stacktrace]
+#0 D:\\laragon\\www\\crmzabulonproducao\\vendor\\symfony\\console\\Application.php(259): Symfony\\Component\\Console\\Application->find('.\\\\server.ph')
+#1 D:\\laragon\\www\\crmzabulonproducao\\vendor\\symfony\\console\\Application.php(171): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#2 D:\\laragon\\www\\crmzabulonproducao\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Application.php(94): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#3 D:\\laragon\\www\\crmzabulonproducao\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(129): Illuminate\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#4 D:\\laragon\\www\\crmzabulonproducao\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#5 {main}
+"} 
+[2025-05-15 09:28:15] production.ERROR: Command ".\server.php" is not defined. {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \".\\server.php\" is not defined. at D:\\laragon\\www\\crmzabulonproducao\\vendor\\symfony\\console\\Application.php:720)
+[stacktrace]
+#0 D:\\laragon\\www\\crmzabulonproducao\\vendor\\symfony\\console\\Application.php(259): Symfony\\Component\\Console\\Application->find('.\\\\server.php')
+#1 D:\\laragon\\www\\crmzabulonproducao\\vendor\\symfony\\console\\Application.php(171): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#2 D:\\laragon\\www\\crmzabulonproducao\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Application.php(94): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#3 D:\\laragon\\www\\crmzabulonproducao\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(129): Illuminate\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#4 D:\\laragon\\www\\crmzabulonproducao\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#5 {main}
+"} 
