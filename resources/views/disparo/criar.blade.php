@@ -214,4 +214,99 @@
             atualizarContador(); // inicia já com o valor certo
         });
     </script>
+    <script>
+function toggleNumerosEnviados() {
+    const lista = document.getElementById('listaNumeros');
+    const seta = document.getElementById('setaToggle');
+
+    if (lista.classList.contains('hidden')) {
+        lista.classList.remove('hidden');
+        seta.classList.remove('bi-chevron-down');
+        seta.classList.add('bi-chevron-up');
+    } else {
+        lista.classList.add('hidden');
+        seta.classList.remove('bi-chevron-up');
+        seta.classList.add('bi-chevron-down');
+    }
+}
+
+function abrirModalDisparo(id) {
+    fetch(`/disparo/${id}`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('idDisparoSelecionado').value = data.id;
+            document.getElementById('modalTitulo').textContent = data.titulo;
+            document.getElementById('modalStatus').textContent = data.status;
+            document.getElementById('modalMensagem').textContent = data.modelo_mensagem;
+            document.getElementById('modalNumeros').textContent = Array.isArray(data.numeros_enviados)
+                ? data.numeros_enviados.length
+                : 0;
+            document.getElementById('modalData').textContent = new Date(data.created_at).toLocaleString();
+
+            // Gerar lista de números com links
+            const lista = document.getElementById('listaNumeros');
+            lista.innerHTML = ''; // limpar lista anterior
+            if (Array.isArray(data.numeros_enviados)) {
+                data.numeros_enviados.forEach(numero => {
+                    const link = document.createElement('a');
+                    const numeroLimpo = numero.replace('@s.whatsapp.net', '');
+                    link.href = `/conversar?numero=${numeroLimpo}`;
+                    link.innerHTML = "<i class='bi bi-whatsapp'></i> " + numeroLimpo;
+                    link.className = "hover:underline text-green-600 text-xs font-semibold block";
+                    link.target = "_blank";
+                    lista.appendChild(link);
+                });
+            }
+
+            // Resetar visibilidade do dropdown
+            lista.classList.add('hidden');
+            document.getElementById('setaToggle').classList.remove('bi-chevron-up');
+            document.getElementById('setaToggle').classList.add('bi-chevron-down');
+
+            // Mostrar ou esconder o botão "Parar Disparo" de acordo com o status
+                const btnParar = document.getElementById('btnPararDisparo');
+                if (data.status === 'rodando') {
+                    btnParar.classList.remove('hidden');
+                } else {
+                    btnParar.classList.add('hidden');
+                }
+
+
+            // Exibir o modal
+            const modal = document.getElementById('modalDisparo');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+}
+
+
+
+function fecharModalDisparo() {
+    const modal = document.getElementById('modalDisparo');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+
+function pararDisparo() {
+    const id = document.getElementById('idDisparoSelecionado').value;
+    
+    if (!confirm('Tem certeza que deseja parar este disparo?')) return;
+
+    fetch(`/disparo/${id}/cancelar`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.mensagem);
+        fecharModalDisparo();
+        location.reload(); // ou só atualiza os cards via JS
+    })
+    .catch(() => alert('Erro ao cancelar o disparo.'));
+}
+</script>
+
 @endsection

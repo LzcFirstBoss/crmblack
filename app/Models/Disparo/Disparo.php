@@ -14,10 +14,12 @@ class Disparo extends Model
         'status',
         'titulo',
         'uid_disparo',
+        'numeros_enviados',
     ];
 
     protected $casts = [
         'numeros' => 'array',
+        'numeros_enviados' => 'array',
     ];
 
     public $incrementing = false;

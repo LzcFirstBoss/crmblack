@@ -72,3 +72,5 @@
 
     Route::get('/disparo', [DisparoController::class, 'criar'])->name('disparo.criar');
     Route::post('/disparo/enviar', [DisparoController::class, 'enviar'])->name('disparo.enviar');
+    Route::get('/disparo/{id}', [DisparoController::class, 'show'])->name('disparo.show');
+    Route::post('/disparo/{id}/cancelar', [DisparoController::class, 'cancelar'])->name('disparo.cancelar');
