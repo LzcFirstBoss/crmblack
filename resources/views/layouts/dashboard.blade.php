@@ -32,7 +32,7 @@
                         <i class="bi bi-house text-lg"></i> <span class="sidebar-text">Dashboard</span>
                     </a>
                     <a href="{{ url('/conversar') }}"
-                        class="flex items-center gap-3 px-3 py-2 rounded transition {{ request()->is('conversas') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
+                        class="flex items-center gap-3 px-3 py-2 rounded transition {{ request()->is('conversar') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
                         <i class="bi bi-chat text-lg"></i> <span class="sidebar-text">Conversas</span>
                     </a>
                     <a href="{{ url('/kanban') }}"
@@ -46,6 +46,10 @@
                     <a href="{{ url('/config') }}"
                         class="flex items-center gap-3 px-3 py-2 rounded transition {{ request()->is('config') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
                         <i class="bi bi-whatsapp text-lg"></i> <span class="sidebar-text">Configurações</span>
+                    </a>
+                                        <a href="{{ url('/disparo') }}"
+                        class="flex items-center gap-3 px-3 py-2 rounded transition {{ request()->is('disparo') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
+                        <i class="bi bi-send"></i> <span class="sidebar-text">Disparos</span>
                     </a>
                 </nav>
             </div>

@@ -8,6 +8,7 @@
     use App\Http\Controllers\Calendario\EventoController;
     use App\Http\Controllers\Conversar\ConversasController;
     use App\Http\Controllers\Dashboard\DashboardController;
+    use App\Http\Controllers\Disparo\DisparoController;
 
 
     //rotas de login
@@ -68,3 +69,6 @@
         Route::post('/api/evolution/enviar-audio-base64', [EvolutionController::class, 'audioEnviar'])->name('teste.evolution.audio.enviar');
         Route::post('/api/evolution/enviar-midia', [EvolutionController::class, 'enviarMidia'])->name('evolution.enviarMidia');
     });
+
+    Route::get('/disparo', [DisparoController::class, 'criar'])->name('disparo.criar');
+    Route::post('/disparo/enviar', [DisparoController::class, 'enviar'])->name('disparo.enviar');
