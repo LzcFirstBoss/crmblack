@@ -25,7 +25,7 @@
     <div class="flex flex-col max-w-[65%] {{ $isMe ? 'items-end' : 'items-start' }}">
 
         {{-- Balão --}}
-        <div class="relative rounded-2xl text-[15px] font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit"
+        <div class="relative rounded-2xl text-[15px] border border-gray-300 shadow-lg font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit"
              style="position: relative; background-color: {{ $corHex }}; padding-top: 6px; padding-bottom: 4px;">
 
             {{-- Setinha --}}
@@ -60,7 +60,13 @@
                 </div>
                 @else
                     <div class="break-words leading-tight text-[15px] font-normal text-black">
-                        {!! preg_replace('/(https?:\/\/[^\s]+)/', '<a href="$1" target="_blank" class="text-blue-600 underline hover:text-blue-800 transition">$1</a>', e($conteudo)) !!}
+                        {!! nl2br(
+                            preg_replace(
+                                '/(https?:\/\/[^\s]+)/',
+                                '<a href="$1" target="_blank" class="text-blue-600 underline hover:text-blue-800 transition">$1</a>',
+                                e($conteudo)
+                            )
+                        ) !!}
                     </div>
                 @endif
 
