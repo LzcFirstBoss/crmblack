@@ -25,31 +25,35 @@ class ApiController extends Controller
     public function horariosDisponiveis(Request $request)
     {
         $this->validarChave($request);
-    
-        $diaBase = $request->input('dia');
-    
-        if (!$diaBase) {
-            return response()->json(['erro' => 'Parâmetro "dia" é obrigatório.'], 400);
+
+        $inicio = $request->input('inicio');
+        $fim = $request->input('fim');
+
+        if (!$inicio || !$fim) {
+            return response()->json(['erro' => 'Parâmetros "inicio" e "fim" são obrigatórios.'], 400);
         }
-    
-        $inicio = Carbon::parse($diaBase)->startOfDay();
-        $fim = $inicio->copy()->addDays(6)->endOfDay();
-    
-        $eventos = Evento::whereBetween('inicio', [$inicio, $fim])->get();
-    
-        $ocupados = [];
-    
-        foreach ($eventos as $evento) {
-            $ocupados[] = [
-                'data' => Carbon::parse($evento->inicio)->format('Y-m-d'),
-                'inicio' => Carbon::parse($evento->inicio)->format('H:i'),
-                'fim' => Carbon::parse($evento->fim)->format('H:i'),
-            ];
-        }
-    
-        return response()->json($ocupados);
+
+        $inicio = Carbon::parse($inicio);
+        $fim = Carbon::parse($fim);
+
+        $conflito = Evento::where(function ($query) use ($inicio, $fim) {
+            $query->whereBetween('inicio', [$inicio, $fim])
+                ->orWhereBetween('fim', [$inicio, $fim])
+                ->orWhere(function ($query) use ($inicio, $fim) {
+                    $query->where('inicio', '<', $inicio)
+                            ->where('fim', '>', $fim);
+                });
+        })->exists();
+
+        return response()->json([
+            'disponivel' => !$conflito,
+            'verificado' => [
+                'inicio' => $inicio->format('Y-m-d H:i'),
+                'fim' => $fim->format('Y-m-d H:i'),
+            ]
+        ]);
     }
-    
+
 
     public function agendarReuniao(Request $request)
     {
