@@ -26,24 +26,29 @@ class AgendaCalendar extends Component
 
     public $numerocliente;
 
-    public function mount()
-    {
-        $this->startsAt = Carbon::now()->startOfMonth();
-        $this->gridStartsAt = $this->startsAt->copy()->startOfWeek(Carbon::SUNDAY);
-        $this->endsAt = $this->startsAt->copy()->endOfMonth();
-    }
+public function mount()
+{
+    $this->startsAt = Carbon::now()->startOfWeek(Carbon::SUNDAY);
+    $this->gridStartsAt = $this->startsAt->copy();
+    $this->endsAt = $this->startsAt->copy()->endOfWeek(Carbon::SATURDAY);
 
-    public function goToPreviousMonth()
-    {
-        $this->startsAt = $this->startsAt->copy()->subMonth();
-        $this->gridStartsAt = $this->startsAt->copy()->startOfWeek(Carbon::SUNDAY);
-    }
+    $this->totalDays = 7;
+}
 
-    public function goToNextMonth()
-    {
-        $this->startsAt = $this->startsAt->copy()->addMonth();
-        $this->gridStartsAt = $this->startsAt->copy()->startOfWeek(Carbon::SUNDAY);
-    }
+public function goToPreviousWeek()
+{
+    $this->startsAt = $this->startsAt->copy()->subWeek();
+    $this->gridStartsAt = $this->startsAt->copy();
+    $this->endsAt = $this->startsAt->copy()->endOfWeek(Carbon::SATURDAY);
+}
+
+public function goToNextWeek()
+{
+    $this->startsAt = $this->startsAt->copy()->addWeek();
+    $this->gridStartsAt = $this->startsAt->copy();
+    $this->endsAt = $this->startsAt->copy()->endOfWeek(Carbon::SATURDAY);
+}
+
 
     public function events()
     {

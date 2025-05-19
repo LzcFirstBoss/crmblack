@@ -7,11 +7,11 @@
             </h2>
 
             <div class="flex gap-2 items-center">
-                <button wire:click="goToPreviousMonth"
+                <button wire:click="goToPreviousWeek"
                     class="bg-white text-black px-3 py-2 rounded-full shadow hover:bg-gray-100">
                     <i class="bi bi-chevron-left"></i>
                 </button>
-                <button wire:click="goToNextMonth"
+                <button wire:click="goToNextWeek"
                     class="bg-white text-black px-3 py-2 rounded-full shadow hover:bg-gray-100">
                     <i class="bi bi-chevron-right"></i>
                 </button>
@@ -28,7 +28,7 @@
             @endforeach
         </div>
 
-        <div class="grid grid-cols-7 auto-rows-[6.5rem] flex-grow">
+        <div class="grid grid-cols-7 flex-grow h-[calc(100vh-260px)]">
             @php $currentDate = \Carbon\Carbon::parse($gridStartsAt); @endphp
             @for ($i = 0; $i < $totalDays; $i++)
                 @php
