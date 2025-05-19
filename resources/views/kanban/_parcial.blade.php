@@ -21,7 +21,8 @@
             <div class="kanban-card-header">
                 <div class="flex items-center justify-between">
                     <a href="{{ url('/conversar') }}?numero={{ $mensagem->numero_cliente }}" class="hover:underline text-orange-600 text-xs font-semibold" target="_blank">
-                        <i class="bi bi-whatsapp"></i> {{ $mensagem->numero_cliente }}
+                        <i class="bi bi-whatsapp"></i> {{ $mensagem->numero_cliente }} - {{ $mensagem->cliente->nome }}
+
                     </a>
 
 <div id="bolinha-{{ $mensagem->numero_cliente }}">

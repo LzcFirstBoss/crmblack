@@ -161,7 +161,9 @@
                     <p class="text-lg font-semibold">Nenhuma conversa aberta</p>
                     <p class="text-sm text-gray-500">Selecione um contato ao lado para começar</p>
                 </div>
-                <div id="mensagens-chat" class="space-y-4 hidden"></div>
+                <div id="mensagens-chat" class="space-y-4 hidden">
+                    
+                </div>
             </div>
 
             <div id="area-input" class="flex items-center gap-3 p-4 border-t bg-white hidden">
