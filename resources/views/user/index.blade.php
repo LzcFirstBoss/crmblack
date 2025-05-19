@@ -39,7 +39,7 @@
                 <span class="text-xs font-medium text-orange-500 uppercase tracking-widest">Ativo</span>
             </div>
             <h5 class="text-md text-gray-600">Bot Status</h5>
-            <p class="text-4xl font-bold text-gray-900 mt-2">{{ $botAtivo ? 'Sim' : 'Não' }}</p>
+            <p class="text-4xl font-bold text-gray-900 mt-2">{{ $botAtivo ? 'Ativo' : 'Desativado' }}</p>
         </div>
 
         <!-- Agendamentos -->
