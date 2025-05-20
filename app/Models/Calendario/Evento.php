@@ -14,6 +14,7 @@ class Evento extends Model
         'inicio',
         'fim',
         'numerocliente',
+        'n_atendimento',
     ];
 
     public $timestamps = true;

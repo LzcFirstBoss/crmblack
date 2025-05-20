@@ -12,7 +12,9 @@ Route::post('/receber-mensagem', [WebhookController::class, 'receberMensagem']);
 Route::prefix('calendario')->group(function () {
     Route::post('/disponiveis', [ApiController::class, 'horariosDisponiveis']);
     Route::post('/agendar', [ApiController::class, 'agendarReuniao']);
+    Route::post('/reagendar', [ApiController::class, 'reagendarReuniao']);
 });
+
 
 // Obter status do bot
 Route::get('/bot/status/{numero}', function ($numero) {

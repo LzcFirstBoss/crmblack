@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use App\Models\Cliente\Cliente;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ConfirmacaoReuniao;
+use Illuminate\Support\Str;
 
 class ApiController extends Controller
 {
@@ -54,80 +55,142 @@ class ApiController extends Controller
         ]);
     }
 
+        public function agendarReuniao(Request $request)
+        {
+            try {
+                $this->validarChave($request);
 
-    public function agendarReuniao(Request $request)
-    {
-        try {
-            $this->validarChave($request);
-    
-            $validator = Validator::make($request->all(), [
-                'titulo' => 'required|string|max:255',
-                'descricao' => 'nullable|string',
-                'inicio' => 'required|date',
-                'fim' => 'required|date|after:inicio',
-                'telefoneWhatsapp' => 'required|string',
-                'email' => 'required|email',
-            ]);
-    
-            if ($validator->fails()) {
+                $validator = Validator::make($request->all(), [
+                    'titulo' => 'required|string|max:255',
+                    'descricao' => 'nullable|string',
+                    'inicio' => 'required|date',
+                    'fim' => 'required|date|after:inicio',
+                    'telefoneWhatsapp' => 'required|string',
+                    'email' => 'nullable|string',
+                ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'erro' => 'Validação falhou',
+                        'mensagens' => $validator->errors()
+                    ], 422);
+                }
+
+                // Verifica conflito
+                $conflito = Evento::where(function ($q) use ($request) {
+                    $q->whereBetween('inicio', [$request->inicio, $request->fim])
+                    ->orWhereBetween('fim', [$request->inicio, $request->fim]);
+                })->exists();
+
+                if ($conflito) {
+                    return response()->json([
+                        'erro' => 'Horário já ocupado.'
+                    ], 409);
+                }
+
+                // Gera o número de atendimento
+                $n_atendimento = 'AT-' . strtoupper(Str::random(8));
+
+                // Cria o evento
+                $evento = Evento::create([
+                    'titulo' => $request->titulo,
+                    'descricao' => $request->descricao,
+                    'inicio' => $request->inicio,
+                    'fim' => $request->fim,
+                    'numerocliente' => $request->telefoneWhatsapp,
+                    'n_atendimento' => $n_atendimento,
+                ]);
+
+                // Atualiza cliente
+                $cliente = Cliente::where('telefoneWhatsapp', $request->telefoneWhatsapp)->first();
+                if ($cliente) {
+                    $cliente->email = $request->email;
+                    $cliente->save();
+                } else {
+                    return response()->json([
+                        'erro' => 'Cliente não encontrado com esse telefoneWhatsapp.'
+                    ], 404);
+                }
+
+                // Envia e-mail se existir
+                if ($request->email) {
+                    Mail::to($request->email)->send(new ConfirmacaoReuniao(
+                        $request->titulo,
+                        $request->inicio,
+                        $request->fim
+                    ));
+                }
+
                 return response()->json([
-                    'erro' => 'Validação falhou',
-                    'mensagens' => $validator->errors()
-                ], 422);
-            }
-    
-            // Verifica conflito
-            $conflito = Evento::where(function ($q) use ($request) {
-                $q->whereBetween('inicio', [$request->inicio, $request->fim])
-                  ->orWhereBetween('fim', [$request->inicio, $request->fim]);
-            })->exists();
-    
-            if ($conflito) {
+                    'mensagem' => 'Reunião agendada com sucesso!',
+                    'n_atendimento' => $n_atendimento,
+                    'evento' => $evento
+                ], 201);
+
+            } catch (\Exception $e) {
                 return response()->json([
-                    'erro' => 'Horário já ocupado.'
-                ], 409);
+                    'erro' => 'Erro interno no servidor',
+                    'mensagem' => $e->getMessage(),
+                    'linha' => $e->getLine(),
+                    'arquivo' => $e->getFile()
+                ], 500);
             }
-    
-            // Cria o evento
-            $evento = Evento::create([
-                'titulo' => $request->titulo,
-                'descricao' => $request->descricao,
-                'inicio' => $request->inicio,
-                'fim' => $request->fim,
-                'numerocliente' => $request->telefoneWhatsapp,
-            ]);            
-    
-            // Atualiza cliente
-            $cliente = Cliente::where('telefoneWhatsapp', $request->telefoneWhatsapp)->first();
-            if ($cliente) {
-                $cliente->email = $request->email;
-                $cliente->save();
-            } else {
-                return response()->json([
-                    'erro' => 'Cliente não encontrado com esse telefoneWhatsapp.'
-                ], 404);
-            }
-    
-            // Envia e-mail
-            Mail::to($request->email)->send(new ConfirmacaoReuniao(
-                $request->titulo,
-                $request->inicio,
-                $request->fim
-            ));
-    
-            return response()->json([
-                'mensagem' => 'Reunião agendada com sucesso!',
-                'evento' => $evento
-            ], 201);
-    
-        } catch (\Exception $e) {
-            return response()->json([
-                'erro' => 'Erro interno no servidor',
-                'mensagem' => $e->getMessage(),
-                'linha' => $e->getLine(),
-                'arquivo' => $e->getFile()
-            ], 500);
         }
-    }
     
+        public function reagendarReuniao(Request $request)
+        {
+            try {
+                $this->validarChave($request);
+
+                $validator = Validator::make($request->all(), [
+                    'n_atendimento' => 'required|string|exists:eventos,n_atendimento',
+                    'inicio' => 'required|date',
+                    'fim' => 'required|date|after:inicio',
+                ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'erro' => 'Validação falhou',
+                        'mensagens' => $validator->errors()
+                    ], 422);
+                }
+
+                $evento = Evento::where('n_atendimento', $request->n_atendimento)->first();
+
+                // Verifica conflito com outros eventos
+                $conflito = Evento::where('id', '!=', $evento->id)
+                    ->where(function ($q) use ($request) {
+                        $q->whereBetween('inicio', [$request->inicio, $request->fim])
+                            ->orWhereBetween('fim', [$request->inicio, $request->fim])
+                            ->orWhere(function ($q) use ($request) {
+                                $q->where('inicio', '<', $request->inicio)
+                                    ->where('fim', '>', $request->fim);
+                            });
+                    })->exists();
+
+                if ($conflito) {
+                    return response()->json([
+                        'erro' => 'Horário já ocupado.'
+                    ], 409);
+                }
+
+                // Atualiza o evento
+                $evento->inicio = $request->inicio;
+                $evento->fim = $request->fim;
+                $evento->save();
+
+                return response()->json([
+                    'mensagem' => 'Reunião remarcada com sucesso.',
+                    'n_atendimento' => $evento->n_atendimento,
+                    'novo_inicio' => $evento->inicio,
+                    'novo_fim' => $evento->fim
+                ]);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'erro' => 'Erro ao remarcar reunião',
+                    'detalhes' => $e->getMessage()
+                ], 500);
+            }
+        }
 }
