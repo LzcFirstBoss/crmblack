@@ -25,7 +25,7 @@
     <div class="flex flex-col max-w-[65%] {{ $isMe ? 'items-end' : 'items-start' }}">
 
         {{-- Balão --}}
-        <div class="relative rounded-2xl text-[15px] border border-gray-300 shadow-lg font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit"
+        <div class="relative rounded-2xl text-[15px] shadow-lg font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit"
              style="position: relative; background-color: {{ $corHex }}; padding-top: 6px; padding-bottom: 4px;">
 
             {{-- Setinha --}}
