@@ -12,6 +12,33 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/emoji-mart@5.4.0/css/emoji-mart.css" />
     <script src="https://cdn.jsdelivr.net/npm/emoji-mart@5.4.0/dist/browser.js"></script>
 </head>
+    <audio id="somNotificacao" src="{{ asset('sounds/notificacao.mp3') }}" preload="auto"></audio>
+<style>
+    /* Seta do dropdown */
+    #modalNotificacoes::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        right: 24px;
+        width: 14px;
+        height: 14px;
+        background: white;
+        border-left: 1px solid #e5e7eb;
+        border-top: 1px solid #e5e7eb;
+        transform: rotate(45deg);
+        z-index: 40;
+    }
+
+    /* Scroll mais suave */
+    #listaNotificacoes::-webkit-scrollbar {
+        width: 6px;
+    }
+    #listaNotificacoes::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 3px;
+    }
+</style>
+
 
 <body class="bg-gray-100 text-gray-900">
     <div class="flex h-screen overflow-hidden">
@@ -66,8 +93,8 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col">
             <!-- Topbar -->
-            <header class="p-4 flex justify-between items-center border-b"
-                style="background: linear-gradient(135deg, #FE7F32, #e8671a);">
+            <header class="relative p-4 flex justify-between items-center border-b"
+        style="background: linear-gradient(135deg, #FE7F32, #e8671a);">
                 <!-- Botão para ocultar/exibir o menu lateral -->
                 <button onclick="toggleSidebar()" class="text-white">
                     <i class="bi bi-list text-2xl"></i>
@@ -75,14 +102,38 @@
 
                 <div class="flex items-center space-x-4">
                     <!-- Notificação -->
-                    <div class="relative">
-                        <button class="text-white hover:text-black">
-                            <i class="bi bi-bell text-2xl"></i>
-                        </button>
-                        <span class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
-                            0
-                        </span>
-                    </div>
+<div class="relative" id="notificacao-wrapper">
+    <button onclick="toggleNotificacoes()" class="text-white hover:text-black relative focus:outline-none">
+        <i class="bi bi-bell text-2xl"></i>
+        <span id="contadorNotificacoes"
+              class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-semibold rounded-full px-1.5 py-0.5">
+            0
+        </span>
+    </button>
+
+    <!-- Dropdown alinhado ao sino -->
+    <div id="modalNotificacoes"
+         class="hidden absolute top-full right-0 w-96 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+        <!-- Seta -->
+        <div class="absolute -top-2 right-6 w-4 h-4 bg-white transform rotate-45 border-t border-l border-gray-200 z-40"></div>
+
+        <!-- Cabeçalho -->
+        <div class="flex justify-between items-center px-4 py-3 border-b border-gray-100 bg-gray-50">
+            <h3 class="font-semibold text-gray-800 text-sm">Notificações</h3>
+            <button onclick="marcarTodasComoLidas()"
+                    class="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                Marcar todas como lidas
+            </button>
+        </div>
+
+        <!-- Lista -->
+        <div id="listaNotificacoes" class="max-h-96 overflow-y-auto bg-white divide-y divide-gray-100">
+            <!-- Conteúdo via JS -->
+        </div>
+    </div>
+</div>
+
+
 
                     <span class="text-white font-medium">Olá, {{ auth()->user()->name }}</span>
                     <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}&background=orange&color=fff"
@@ -100,50 +151,9 @@
         </div>
     </div>
 
-    <!-- Script para deixar aberto por padrão -->
-    <script>
-        let sidebarOpen = true; // Começa ABERTO
-
-        window.onload = function() {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarTexts = document.querySelectorAll('.sidebar-text');
-            const logoSidebar = document.getElementById('logo-sidebar');
-            const navLabel = document.getElementById('navegacao-label');
-
-            sidebar.classList.add('w-64');
-            sidebar.classList.remove('w-20');
-            sidebarTexts.forEach(el => el.classList.remove('hidden'));
-            logoSidebar.classList.remove('scale-75');
-            navLabel.classList.remove('hidden');
-        };
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarTexts = document.querySelectorAll('.sidebar-text');
-            const logoSidebar = document.getElementById('logo-sidebar');
-            const navLabel = document.getElementById('navegacao-label');
-
-            if (sidebarOpen) {
-                // FECHAR
-                sidebar.classList.remove('w-64');
-                sidebar.classList.add('w-20');
-                sidebarTexts.forEach(el => el.classList.add('hidden'));
-                logoSidebar.classList.add('scale-75');
-                navLabel.classList.add('hidden');
-            } else {
-                // ABRIR
-                sidebar.classList.remove('w-20');
-                sidebar.classList.add('w-64');
-                sidebarTexts.forEach(el => el.classList.remove('hidden'));
-                logoSidebar.classList.remove('scale-75');
-                navLabel.classList.remove('hidden');
-            }
-            sidebarOpen = !sidebarOpen;
-        }
-    </script>
-
-    <!-- Lottie -->
-    <script src="https://unpkg.com/lottie-web@5.7.4/build/player/lottie.min.js"></script>
 </body>
-
 </html>
+<!-- Lottie -->
+<script src="{{ asset('js/notificacao/notificacao.js') }}"></script>
+<script src="{{ asset('js/menu/menu.js') }}"></script>
+<script src="https://unpkg.com/lottie-web@5.7.4/build/player/lottie.min.js"></script>

@@ -11,6 +11,9 @@ use App\Models\Cliente\Cliente;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ConfirmacaoReuniao;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
+use App\Models\Notificacao\Notificacao;
+use App\Models\User;
 
 class ApiController extends Controller
 {
@@ -89,7 +92,7 @@ class ApiController extends Controller
                 }
 
                 // Gera o número de atendimento
-                $n_atendimento = 'AT-' . strtoupper(Str::random(8));
+                $n_atendimento = 'AT-' . strtoupper(Str::random(4));
 
                 // Cria o evento
                 $evento = Evento::create([
@@ -179,13 +182,38 @@ class ApiController extends Controller
                 $evento->fim = $request->fim;
                 $evento->save();
 
+                $usuarios = User::all();
+
+                $linkNumero = preg_replace('/@s\.whatsapp\.net$/', '', $evento->numerocliente);
+
+                foreach ($usuarios as $usuario) {
+                    Notificacao::create([
+                        'user_id' => $usuario->id,
+                        'titulo' => 'Reunião remarcada',
+                        'mensagem' => 'Uma reunião foi remarcada para ' . \Carbon\Carbon::parse($request->inicio)->format('d/m/Y H:i'),
+                        'tipo' => 'reuniao_remarcada',
+                        'link' =>  $linkNumero,
+                        'dados' => json_encode(['n_atendimento' => $evento->n_atendimento])
+                    ]);
+                }
+
+                Http::post('http://localhost:3001/enviar', [
+                    'evento' => 'novaNotificacao',
+                    'dados' => [
+                        'id' => rand(10000, 99999),
+                        'titulo' => 'Reunião remarcada',
+                        'mensagem' => 'Uma reunião foi remarcada para ' . \Carbon\Carbon::parse($request->inicio)->format('d/m/Y H:i'),
+                        'tipo' => 'reuniao_remarcada',
+                        'created_at' => now()->toISOString()
+                    ]
+                ]); 
+
                 return response()->json([
                     'mensagem' => 'Reunião remarcada com sucesso.',
                     'n_atendimento' => $evento->n_atendimento,
                     'novo_inicio' => $evento->inicio,
                     'novo_fim' => $evento->fim
                 ]);
-
             } catch (\Exception $e) {
                 return response()->json([
                     'erro' => 'Erro ao remarcar reunião',

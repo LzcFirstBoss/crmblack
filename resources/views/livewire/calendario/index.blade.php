@@ -114,8 +114,6 @@
                         </div>
 
                         <div class="flex justify-end gap-3 pt-4">
-                            <button type="button" wire:click="fecharModal"
-                                class="text-gray-600 hover:underline">Cancelar</button>
                             <button type="submit"
                                 class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">
                                 Salvar
