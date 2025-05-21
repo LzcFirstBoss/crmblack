@@ -36,39 +36,61 @@
                         {{ $isMe ? 'border-left' : 'border-right' }}: 6px solid {{ $corHex }};">
             </div>
 
-            {{-- Conteúdo --}}
-            @if ($ehImagem || $ehAudio || $ehVideo)
-                <div class="{{ $ehImagem || $ehVideo ? 'media-clickable cursor-pointer' : '' }}"
-                     data-type="{{ $ehImagem ? 'image' : ($ehVideo ? 'video' : '') }}"
-                     data-src="{{ $caminho }}">
-                    @if ($ehImagem)
-                        <img src="{{ $caminho }}" loading="lazy" alt="Imagem" class="rounded-xl max-w-xs preview-media">
-                    @elseif ($ehAudio)
-                        <div class="custom-audio-player flex items-center gap-4 bg-white rounded-lg p-3 border border-gray-300">
-                            <button class="play-pause text-green-500 text-2xl"><i class="bi bi-play-fill"></i></button>
-                            <div class="progress-bar flex-1 bg-gray-200 rounded h-2 cursor-pointer">
-                                <div class="progress bg-green-500 h-2 rounded" style="width: 0%;"></div>
-                            </div>
-                            <div class="time text-sm text-gray-600">0:00 / 0:00</div>
-                        </div>
-                    @elseif ($ehVideo)
-                        <video controls class="video-player w-full mt-2 rounded-xl bg-black">
-                            <source src="{{ $caminho }}">
-                            Seu navegador não suporta vídeo.
-                        </video>
-                    @endif
+@php
+    $ehArquivo = preg_match('/\.(pdf|doc|docx|txt|xls|xlsx|zip|rar|csv)$/i', $conteudo);
+    $nomeArquivo = basename($conteudo);
+    $extensao = pathinfo($nomeArquivo, PATHINFO_EXTENSION);
+@endphp
+
+{{-- Conteúdo --}}
+@if ($ehImagem || $ehAudio || $ehVideo || $ehArquivo)
+    <div class="{{ ($ehImagem || $ehVideo) ? 'media-clickable cursor-pointer' : '' }}"
+         data-type="{{ $ehImagem ? 'image' : ($ehVideo ? 'video' : '') }}"
+         data-src="{{ $caminho }}">
+        @if ($ehImagem)
+            <img src="{{ $caminho }}" loading="lazy" alt="Imagem" class="rounded-xl max-w-xs preview-media">
+        @elseif ($ehAudio)
+            <div class="custom-audio-player flex items-center gap-4 bg-white rounded-lg p-3 border border-gray-300">
+                <button class="play-pause text-green-500 text-2xl"><i class="bi bi-play-fill"></i></button>
+                <div class="progress-bar flex-1 bg-gray-200 rounded h-2 cursor-pointer">
+                    <div class="progress bg-green-500 h-2 rounded" style="width: 0%;"></div>
                 </div>
-                @else
-                    <div class="break-words leading-tight text-[15px] font-normal text-black">
-                        {!! nl2br(
-                            preg_replace(
-                                '/(https?:\/\/[^\s]+)/',
-                                '<a href="$1" target="_blank" class="text-blue-600 underline hover:text-blue-800 transition">$1</a>',
-                                e($conteudo)
-                            )
-                        ) !!}
-                    </div>
-                @endif
+                <div class="time text-sm text-gray-600">0:00 / 0:00</div>
+            </div>
+        @elseif ($ehVideo)
+            <video controls class="video-player w-full mt-2 rounded-xl bg-black">
+                <source src="{{ $caminho }}">
+                Seu navegador não suporta vídeo.
+            </video>
+        @elseif ($ehArquivo)
+  <a href="{{ $caminho }}" download
+       class="flex items-center gap-3 bg-white border border-gray-300 rounded-xl p-3 shadow-sm w-full max-w-xs hover:bg-gray-100 transition"
+       title="Baixar arquivo">
+        <div class="flex-shrink-0">
+            <i class="bi bi-file-earmark-text text-3xl text-gray-600"></i>
+        </div>
+        <div class="flex-1 overflow-hidden">
+            <p class="text-sm font-medium text-gray-800 truncate">{{ $nomeArquivo }}</p>
+            <p class="text-xs text-gray-500">{{ strtoupper($extensao) }} • Arquivo</p>
+        </div>
+        <div class="text-xl">
+            <i class="bi bi-arrow-down-circle"></i>
+        </div>
+    </a>
+        @endif
+    </div>
+@else
+    <div class="break-words leading-tight text-[15px] font-normal text-black">
+        {!! nl2br(
+            preg_replace(
+                '/(https?:\/\/[^\s]+)/',
+                '<a href="$1" target="_blank" class="text-blue-600 underline hover:text-blue-800 transition">$1</a>',
+                e($conteudo)
+            )
+        ) !!}
+    </div>
+@endif
+
 
             {{-- Horário discreto --}}
             <div class="text-[9px] text-gray-500 text-right mt-[3px]">

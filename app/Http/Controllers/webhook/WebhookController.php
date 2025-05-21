@@ -29,8 +29,14 @@ class WebhookController extends Controller
             $numeroCliente = $mensagem['numero_cliente'] . '@s.whatsapp.net';
             $caminhoArquivo = null;
 
-            if (in_array($tipo, ['imagem', 'audio', 'video']) && !empty($mensagem['base64'])) {
-                $caminhoArquivo = $this->salvarArquivoBase64($mensagem['base64'], $tipo, $mensagem['numero_cliente']);
+            if (in_array($tipo, ['imagem', 'audio', 'video', 'documento']) && !empty($mensagem['base64'])) {
+                $nomeArquivoOriginal = $mensagem['nome_arquivo'] ?? null;
+                $caminhoArquivo = $this->salvarArquivoBase64(
+                    $mensagem['base64'],
+                    $tipo,
+                    $mensagem['numero_cliente'],
+                    $nomeArquivoOriginal
+                );
             }
 
             // Incrementar mensagens novas e criar cliente se não existir
@@ -103,7 +109,8 @@ class WebhookController extends Controller
     private function tipoEhValido(string $tipo): bool
     {
         return in_array($tipo, [
-            'conversation', 'extendedTextMessage', 'imageMessage', 'audioMessage', 'videoMessage',
+            'conversation', 'extendedTextMessage', 'imageMessage',
+            'audioMessage', 'videoMessage', 'documentMessage',
         ]);
     }
 
@@ -114,6 +121,7 @@ class WebhookController extends Controller
             'imageMessage' => 'imagem',
             'audioMessage' => 'audio',
             'videoMessage' => 'video',
+            'documentMessage' => 'documento',
             default => 'desconhecido',
         };
     }
@@ -125,24 +133,39 @@ class WebhookController extends Controller
             filter_var($mensagem['bot'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
-    private function salvarArquivoBase64(string $base64, string $tipo, string $numeroCliente): ?string
+    private function salvarArquivoBase64(string $base64, string $tipo, string $numeroCliente, ?string $nomeOriginal = null): ?string
     {
-        $extensao = match ($tipo) {
-            'imagem' => 'jpg',
-            'audio' => 'mp3',
-            'video' => 'mp4',
-            default => 'bin',
-        };
+        // Pega a extensão
+        $extensao = $nomeOriginal
+            ? pathinfo($nomeOriginal, PATHINFO_EXTENSION)
+            : match ($tipo) {
+                'imagem' => 'jpg',
+                'audio' => 'mp3',
+                'video' => 'mp4',
+                'documento' => 'pdf',
+                default => 'bin',
+            };
+
+        // Pega o nome base sem extensão
+        $nomeBase = $nomeOriginal
+            ? pathinfo($nomeOriginal, PATHINFO_FILENAME)
+            : $tipo;
+
+        // Sanitiza nome para evitar problemas (sem espaços, barras etc)
+        $nomeBase = preg_replace('/[^A-Za-z0-9_\-]/', '_', $nomeBase);
+
+        // Garante nome único com timestamp e uniqid
+        $nomeArquivo = $nomeBase . '_' . time() . '_' . uniqid() . '.' . $extensao;
 
         $pastaTipo = match ($tipo) {
             'imagem' => 'imagens',
             'audio' => 'audios',
             'video' => 'videos',
+            'documento' => 'documentos',
             default => 'outros',
         };
 
         $caminhoCompleto = "uploads/$numeroCliente/$pastaTipo";
-        $nomeArquivo = uniqid() . '.' . $extensao;
 
         Storage::disk('public')->put("$caminhoCompleto/$nomeArquivo", base64_decode($base64));
 

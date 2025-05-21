@@ -10,6 +10,8 @@
             $icone = '<i class="bi bi-music-note-beamed"></i> Áudio';
         } elseif (Str::startsWith($preview, 'uploads/') && Str::endsWith($preview, ['.mp4', '.mov', '.avi'])) {
             $icone = '<i class="bi bi-camera-reels"></i> Vídeo';
+        } elseif (Str::startsWith($preview, 'uploads/') && Str::endsWith($preview, ['.txt', '.pdf', '.word', 'df', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'zip', 'rar', 'csv'])) {
+            $icone = '<i class="bi bi-file-earmark"></i> Documento';
         }
     @endphp
 
