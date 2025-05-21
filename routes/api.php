@@ -13,6 +13,7 @@ Route::prefix('calendario')->group(function () {
     Route::post('/disponiveis', [ApiController::class, 'horariosDisponiveis']);
     Route::post('/agendar', [ApiController::class, 'agendarReuniao']);
     Route::post('/reagendar', [ApiController::class, 'reagendarReuniao']);
+    Route::post('/cancelar', [ApiController::class, 'cancelarReuniao']);
 });
 
 

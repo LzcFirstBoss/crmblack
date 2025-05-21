@@ -124,8 +124,21 @@ class ApiController extends Controller
                     ));
                 }
 
+                $numero = $request->telefoneWhatsapp;
+
+               // Envia para WebSocket
+                Http::post('http://localhost:3001/enviar', [
+                    'evento' => 'novaNotificacao',
+                    'dados' => [
+                        'titulo' => 'Consulta Agendada',
+                        'mensagem' => 'A Consulta com o número ' . $numero . ' foi agendada.',
+                        'tipo' => 'reuniao_agendada',
+                        'created_at' => now()->toISOString()
+                    ]
+                ]);
+
                 return response()->json([
-                    'mensagem' => 'Reunião agendada com sucesso!',
+                    'mensagem' => 'Consulta agendada com sucesso!',
                     'n_atendimento' => $n_atendimento,
                     'evento' => $evento
                 ], 201);
@@ -152,12 +165,20 @@ class ApiController extends Controller
                 ]);
 
                 if ($validator->fails()) {
+                    $mensagens = $validator->errors();
+
+                    if ($mensagens->has('n_atendimento')) {
+                        return response()->json([
+                            'erro' => 'Código de atendimento inválido ou não encontrado.'
+                        ], 404);
+                    }
+
                     return response()->json([
                         'erro' => 'Validação falhou',
-                        'mensagens' => $validator->errors()
+                        'mensagens' => $mensagens
                     ], 422);
                 }
-
+                
                 $evento = Evento::where('n_atendimento', $request->n_atendimento)->first();
 
                 // Verifica conflito com outros eventos
@@ -189,8 +210,8 @@ class ApiController extends Controller
                 foreach ($usuarios as $usuario) {
                     Notificacao::create([
                         'user_id' => $usuario->id,
-                        'titulo' => 'Reunião remarcada',
-                        'mensagem' => 'Uma reunião foi remarcada para ' . \Carbon\Carbon::parse($request->inicio)->format('d/m/Y H:i'),
+                        'titulo' => 'Consulta remarcada',
+                        'mensagem' => 'Uma Consulta foi remarcada para ' . \Carbon\Carbon::parse($request->inicio)->format('d/m/Y H:i'),
                         'tipo' => 'reuniao_remarcada',
                         'link' =>  $linkNumero,
                         'dados' => json_encode(['n_atendimento' => $evento->n_atendimento])
@@ -201,22 +222,93 @@ class ApiController extends Controller
                     'evento' => 'novaNotificacao',
                     'dados' => [
                         'id' => rand(10000, 99999),
-                        'titulo' => 'Reunião remarcada',
-                        'mensagem' => 'Uma reunião foi remarcada para ' . \Carbon\Carbon::parse($request->inicio)->format('d/m/Y H:i'),
+                        'titulo' => 'Consulta remarcada',
+                        'mensagem' => 'Uma Consulta foi remarcada para ' . \Carbon\Carbon::parse($request->inicio)->format('d/m/Y H:i'),
                         'tipo' => 'reuniao_remarcada',
                         'created_at' => now()->toISOString()
                     ]
                 ]); 
 
                 return response()->json([
-                    'mensagem' => 'Reunião remarcada com sucesso.',
+                    'mensagem' => 'Consulta remarcada com sucesso.',
                     'n_atendimento' => $evento->n_atendimento,
                     'novo_inicio' => $evento->inicio,
                     'novo_fim' => $evento->fim
                 ]);
             } catch (\Exception $e) {
                 return response()->json([
-                    'erro' => 'Erro ao remarcar reunião',
+                    'erro' => 'Erro ao remarcar Consulta',
+                    'detalhes' => $e->getMessage()
+                ], 500);
+            }
+        }
+
+        public function cancelarReuniao(Request $request)
+        {
+            try {
+                $this->validarChave($request);
+
+                $validator = Validator::make($request->all(), [
+                    'n_atendimento' => 'required|string|exists:eventos,n_atendimento',
+                ]);
+
+                if ($validator->fails()) {
+                    $mensagens = $validator->errors();
+
+                    if ($mensagens->has('n_atendimento')) {
+                        return response()->json([
+                            'erro' => 'Código de atendimento inválido ou não encontrado.'
+                        ], 404);
+                    }
+
+                    return response()->json([
+                        'erro' => 'Validação falhou',
+                        'mensagens' => $mensagens
+                    ], 422);
+                }   
+
+                $evento = Evento::where('n_atendimento', $request->n_atendimento)->first();
+
+                if (!$evento) {
+                    return response()->json(['erro' => 'Evento não encontrado.'], 404);
+                }
+
+                $numero = preg_replace('/@s\.whatsapp\.net$/', '', $evento->numerocliente);
+
+                // Remove o evento do calendário
+                $evento->delete();
+
+                // Notifica todos os usuários
+                $usuarios = User::all();
+                foreach ($usuarios as $usuario) {
+                    Notificacao::create([
+                        'user_id' => $usuario->id,
+                        'titulo' => 'Consulta cancelada',
+                        'mensagem' => 'A Consulta com o número ' . $numero . ' foi cancelada.',
+                        'tipo' => 'reuniao_cancelada',
+                        'dados' => json_encode(['n_atendimento' => $request->n_atendimento, 'numero' => $numero])
+                    ]);
+                }
+
+                // Envia para WebSocket
+                Http::post('http://localhost:3001/enviar', [
+                    'evento' => 'novaNotificacao',
+                    'dados' => [
+                        'titulo' => 'Consulta cancelada',
+                        'mensagem' => 'A Consulta com o número ' . $numero . ' foi cancelada.',
+                        'tipo' => 'reuniao_cancelada',
+                        'created_at' => now()->toISOString()
+                    ]
+                ]);
+
+                return response()->json([
+                    'mensagem' => 'Consulta cancelada com sucesso.',
+                    'n_atendimento' => $request->n_atendimento
+                ]);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'erro' => 'Erro ao cancelar Consulta',
                     'detalhes' => $e->getMessage()
                 ], 500);
             }

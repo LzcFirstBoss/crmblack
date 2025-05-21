@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/emoji-mart@5.4.0/css/emoji-mart.css" />
     <script src="https://cdn.jsdelivr.net/npm/emoji-mart@5.4.0/dist/browser.js"></script>
 </head>
-    <audio id="somNotificacao" src="{{ asset('sounds/notificacao.mp3') }}" preload="auto"></audio>
 <style>
     /* Seta do dropdown */
     #modalNotificacoes::before {
