@@ -149,30 +149,50 @@ class EvolutionController extends Controller
                 return response()->json(['erro' => 'Número ou mensagem inválida.'], 400);
             }
 
-            // Primeiro salva no banco com status = false (0)
+            // Iniciar payload com texto
+            $payload = [
+                'number' => $numeroEvolution,
+                'text'   => $mensagem,
+            ];
+
+            if ($request->has('resposta')) {
+                $resposta = $request->input('resposta');
+
+                // quoted para API
+                if (isset($resposta['id'], $resposta['texto'], $resposta['numero'])) {
+                    $payload['quoted'] = [
+                        'key' => [
+                            'remoteJid' => $resposta['numero'] . '@s.whatsapp.net',
+                            'fromMe' => $resposta['fromMe'] ?? false,
+                            'id' => $resposta['id']
+                        ],
+                        'message' => [
+                            'conversation' => $resposta['texto']
+                        ]
+                    ];
+                }
+            }
+            
+            // Salvar no banco
             $mensagemSalva = Mensagem::create([
-                'numero_cliente' => $numeroLimpo,
-                'tipo_de_mensagem' => 'conversation',
-                'mensagem_enviada' => $mensagem,
-                'data_e_hora_envio' => now(),
-                'enviado_por_mim' => true,
-                'usuario_id' => auth()->id(),
-                'bot' => false,
-                'status' => false, // ainda não enviada
+                'numero_cliente'          => $numeroLimpo,
+                'tipo_de_mensagem'        => 'conversation',
+                'mensagem_enviada'        => $mensagem,
+                'data_e_hora_envio'       => now(),
+                'enviado_por_mim'         => true,
+                'usuario_id'              => auth()->id(),
+                'bot'                     => false,
+                'status'                  => 'enviando',
+                'mensagem_respondida_id'  => $resposta['id'] ?? null,
             ]);
 
-            // Dados API Evolution
+            // Enviar para Evolution
             $instance = env('EVOLUTION_INSTANCE_ID');
             $apiKey   = env('EVOLUTION_API_KEY');
             $server   = env('EVOLUTION_API_URL');
 
             $url = "{$server}/message/sendText/{$instance}";
-            $payload = [
-                'number' => $numeroEvolution,
-                'text'   => $mensagem
-            ];
 
-            // Envio via cURL
             $curl = curl_init();
             curl_setopt_array($curl, [
                 CURLOPT_URL => $url,
@@ -201,17 +221,24 @@ class EvolutionController extends Controller
                 ], 400);
             }
 
-            // Se chegou até aqui, mensagem foi enviada com sucesso → atualiza o status
-            $mensagemSalva->update(['status' => true]);
+            $atualizacao = ['status' => 'enviado'];
+            if (isset($resposta['key']['id'])) {
+                $atualizacao['id_mensagem'] = $resposta['key']['id'];
+            }
+
+            $mensagemSalva->update($atualizacao);
 
             return response()->json([
                 'status' => 'Mensagem enviada com sucesso',
+                'id_mensagem' => $resposta['key']['id'] ?? null,
                 'retorno' => $resposta
             ]);
         } catch (\Exception $e) {
             return response()->json(['erro' => 'Erro interno: ' . $e->getMessage()], 500);
         }
     }
+
+
 
     public function audioEnviar(Request $request)
     {
@@ -381,4 +408,78 @@ class EvolutionController extends Controller
         ]);
     }
     
+    public function apagarMensagemParaTodos(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|string',
+            'remoteJid' => 'required|string',
+            'fromMe' => 'required|boolean',
+        ]);
+
+        $server = env('EVOLUTION_API_URL');
+        $instance = env('EVOLUTION_INSTANCE_ID');
+        $apikey = env('EVOLUTION_API_KEY');
+
+        $url = "{$server}/chat/deleteMessageForEveryone/{$instance}";
+
+        $payload = [
+            'id' => $validated['id'],
+            'remoteJid' => $validated['remoteJid'],
+            'fromMe' => $validated['fromMe'],
+        ];
+
+        if (!empty($validated['participant'])) {
+            $payload['participant'] = $validated['participant'];
+        }
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'apikey' => $apikey,
+        ])->withBody(json_encode($payload), 'application/json')
+        ->delete($url);
+
+        if ($response->successful()) {
+            Mensagem::where('id_mensagem', $validated['id'])->update(['status' => 'apagado']);
+            return response()->json(['sucesso' => true, 'resposta' => $response->json()]);
+        }
+
+        return response()->json(['erro' => 'Falha ao deletar', 'detalhes' => $response->body()], $response->status());
+    }
+
+    public function editarMensagem(Request $request)
+    {
+        $request->validate([
+            'number' => 'required|numeric', // Ex: 556499999999
+            'text' => 'required|string',
+            'remoteJid' => 'required|string', // Ex: 556499999999@s.whatsapp.net
+            'fromMe' => 'required|boolean',
+            'id' => 'required|string', // ID da mensagem
+        ]);
+
+        $payload = [
+            'number' => $request->number,
+            'text' => $request->text,
+            'key' => [
+                'remoteJid' => $request->remoteJid,
+                'fromMe' => $request->fromMe,
+                'id' => $request->id,
+            ],
+        ];
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'apikey' => env('EVOLUTION_API_KEY'),
+        ])->post(env('EVOLUTION_API_URL') . '/chat/updateMessage/' . env('EVOLUTION_INSTANCE_ID'), $payload);
+
+        if ($response->successful()) {
+            Mensagem::where('id_mensagem', $request->id)->update([
+                'mensagem_enviada' => $request->text,
+                'status' => 'editado'
+            ]);
+
+            return response()->json(['sucesso' => true, 'retorno_api' => $response->json()]);
+        }
+
+        return response()->json(['erro' => true, 'mensagem' => $response->body()], $response->status());
+    }
 }

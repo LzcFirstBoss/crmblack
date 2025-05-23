@@ -65,6 +65,7 @@ class WebhookController extends Controller
             // Salvar no banco
             $novaMensagem = Mensagem::create([
                 'numero_cliente'    => $mensagem['numero_cliente'] ?? '',
+                'id_mensagem'       => $mensagem['id_mensagem'] ?? null,
                 'tipo_de_mensagem'  => $mensagem['tipo_de_mensagem'] ?? '',
                 'mensagem_enviada'  => $caminhoArquivo ?? ($mensagem['mensagem_enviada'] ?? null),
                 'data_e_hora_envio' => $mensagem['data_e_hora_envio'] ?? now(),

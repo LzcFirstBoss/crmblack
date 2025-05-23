@@ -69,6 +69,8 @@
         Route::post('/kanban/enviar-mensagem', [EvolutionController::class, 'enviarMensagem'])->name('kanban.enviar-mensagem');
         Route::post('/api/evolution/enviar-audio-base64', [EvolutionController::class, 'audioEnviar'])->name('teste.evolution.audio.enviar');
         Route::post('/api/evolution/enviar-midia', [EvolutionController::class, 'enviarMidia'])->name('evolution.enviarMidia');
+        Route::delete('/mensagem/apagar', [EvolutionController::class, 'apagarMensagemParaTodos'])->name('mensagem.apagar');
+        Route::post('/mensagem/editar', [EvolutionController::class, 'editarMensagem'])->name('mensagem.editar');
     });
 
     Route::middleware('auth')->group(function () {
@@ -78,7 +80,8 @@
         Route::post('/disparo/{id}/cancelar', [DisparoController::class, 'cancelar'])->name('disparo.cancelar');
     });
 
-    Route::get('/notificacoes/listar', [NotificacaoController::class, 'listar']);
-    Route::post('/notificacoes/marcar-todas-como-lidas', [NotificacaoController::class, 'marcarTodasComoLidas']);
-    Route::delete('/notificacoes/{id}', [NotificacaoController::class, 'deletar'])->middleware('auth');
-
+    Route::middleware('auth')->group(function () {
+        Route::get('/notificacoes/listar', [NotificacaoController::class, 'listar']);
+        Route::post('/notificacoes/marcar-todas-como-lidas', [NotificacaoController::class, 'marcarTodasComoLidas']);
+        Route::delete('/notificacoes/{id}', [NotificacaoController::class, 'deletar'])->middleware('auth');
+    });

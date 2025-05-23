@@ -6,8 +6,7 @@ use App\Http\Controllers\Webhook\WebhookController;
 use App\Http\Controllers\Calendario\ApiController;
 use App\Models\Cliente\Cliente;
 
-
-Route::post('/receber-mensagem', [WebhookController::class, 'receberMensagem']);
+    Route::post('/receber-mensagem', [WebhookController::class, 'receberMensagem']);
 
 Route::prefix('calendario')->group(function () {
     Route::post('/disponiveis', [ApiController::class, 'horariosDisponiveis']);

@@ -13,6 +13,7 @@ class Mensagem extends Model
 
     protected $fillable = [
         'numero_cliente',
+        'id_mensagem',
         'tipo_de_mensagem',
         'mensagem_enviada',
         'base64',
@@ -21,6 +22,7 @@ class Mensagem extends Model
         'usuario_id',
         'bot',
         'status',
+        'mensagem_respondida_id',
     ];
 
     protected $casts = [
@@ -31,5 +33,10 @@ class Mensagem extends Model
     public function usuario()
     {
         return $this->belongsTo(\App\Models\User::class, 'usuario_id');
+    }
+
+    public function mensagem_respondida()
+    {
+        return $this->belongsTo(Mensagem::class, 'mensagem_respondida_id');
     }
 }

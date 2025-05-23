@@ -102,6 +102,11 @@
             border-radius: 0.75rem;
             /* reduz a borda */
         }
+        
+        .destacar-msg {
+            filter: brightness(0.85);
+            transition: filter 0.3s ease;
+        }
     </style>
 
     <div class="flex h-[calc(100vh-70px)] bg-gray-100">
@@ -166,6 +171,19 @@
                 </div>
             </div>
 
+            <!-- Bloco de resposta ativa -->
+            <div id="respostaAtiva" class="hidden px-6 py-2 bg-white border-t border-b border-gray-200">
+                <div class="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2 shadow-sm">
+                    <div>
+                        <div class="text-xs font-bold text-orange-500" id="respostaRemetente">Remetente</div>
+                        <div class="text-sm text-gray-700 truncate" id="respostaTexto">Texto da mensagem original</div>
+                    </div>
+                    <button onclick="cancelarResposta()" class="text-gray-400 hover:text-red-500 text-sm ml-4">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+
             <div id="area-input" class="flex items-center gap-3 p-4 border-t bg-white hidden">
 
                 <!-- Caixa de Mensagem com ícones dentro -->
@@ -218,7 +236,6 @@
                         </div>
 
                     </div>
-
                     <!-- Área de digitação -->
                     <div class="flex-1 max-h-28 overflow-y-auto" id="input-mensagem" contenteditable="true"
                         placeholder="Digite uma mensagem..."
@@ -263,11 +280,6 @@
                 </div>
 
             </div>
-
-
-
-
-
         </div>
     </div>
 
@@ -311,11 +323,48 @@
     </div>
 </div>
 
+<!-- Modal de Edição -->
+<div id="modalEditarMensagem" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl w-[95%] max-w-xl p-6 relative animate-fade-in">
+        <!-- Cabeçalho -->
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">Editar mensagem</h2>
+            <button onclick="fecharModalEditar()" class="text-gray-500 hover:text-black text-xl">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Área de edição com botão embutido -->
+        <div class="flex items-center gap-2">
+            <div class="relative flex-grow">
+                <textarea id="inputEditarMensagem"
+                          class="w-full border border-gray-300 rounded-lg pr-10 p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          rows="2"
+                          placeholder="Digite sua nova mensagem..."></textarea>
+
+                <!-- Botão salvar embutido à direita dentro do textarea -->
+                <button onclick="confirmarEditarMensagem()"
+                        class="absolute top-2 right-2 text-blue-600 hover:text-blue-800 transition"
+                        title="Salvar">
+                    <i class="bi bi-send-fill text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Campo oculto -->
+        <input type="hidden" id="idMensagemEditar">
+    </div>
+</div>
+
+
 
     <script>
         window.ROTA_ENVIAR_MENSAGEM = "{{ route('kanban.enviar-mensagem') }}";
         window.CSRF_TOKEN = "{{ csrf_token() }}";
         window.WEBSOCKET_TOKEN = "{{ env('WEBSOCKET_TOKEN') }}";
+        window.ROTA_APAGAR_MENSAGEM = "{{ route('mensagem.apagar') }}";
+        window.numeroAtualSelecionado = "{{ $numero ?? '' }}";
     </script>
     <script src="{{ asset('js/conversar/conversar.js') }}"></script>
+    <script src="{{ asset('js/conversar/apagar_editar.js') }}"></script>
 @endsection

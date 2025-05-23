@@ -26,7 +26,10 @@ class ConversasController extends Controller
         if ($numero) {
             $numeroFormatado = $numero . '@s.whatsapp.net';
             $cliente = Cliente::where('telefoneWhatsapp', $numeroFormatado)->first();
-            $mensagens = Mensagem::where('numero', $numero)->orderBy('data_e_hora_envio')->get();
+            $mensagens = Mensagem::where('numero', $numero)
+            ->with(['mensagem_respondida', 'usuario']) // <- carrega a resposta e o usuário de uma vez
+            ->orderBy('data_e_hora_envio')
+            ->get();
         }
     
         return view('conversas.index', compact('contatos', 'mensagens', 'cliente', 'numero'));
@@ -56,9 +59,8 @@ class ConversasController extends Controller
 
     public function historico($numero)
     {
-        // Carrega o histórico de um número específico
         $mensagens = Mensagem::where('numero_cliente', $numero)
-            ->with('usuario')
+            ->with(['usuario', 'mensagem_respondida']) // <-- adiciona esse relacionamento
             ->orderBy('data_e_hora_envio', 'asc')
             ->get();
 

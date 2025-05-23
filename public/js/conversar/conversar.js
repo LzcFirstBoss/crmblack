@@ -25,7 +25,7 @@ function conectarWebSocket() {
     socket.onopen = () => console.log('Conectado ao WebSocket');
     socket.onmessage = (event) => {
         const mensagem = JSON.parse(event.data);
-    if (mensagem.evento === 'kanban:novaMensagem' && mensagem.dados.numero === numeroAtualSelecionado) {
+        if (mensagem.evento === 'kanban:novaMensagem' && mensagem.dados.numero === numeroAtualSelecionado) {
             carregarNovasMensagens();
         }
     };
@@ -56,7 +56,7 @@ function abrirConversa(numero) {
     document.getElementById('mensagens-chat').classList.remove('hidden');
 
     document.querySelectorAll('.contato').forEach(c => c.classList.remove('bg-gray-200'));
-    document.getElementById('contato-' + numero)?.classList.add('bg-gray-200');
+    document.getElementById('contato-' + numero) ?.classList.add('bg-gray-200');
 
     document.getElementById('mensagens-chat').innerHTML = '<div class="w-full flex justify-center items-center py-10 text-gray-400"><i class="bi bi-arrow-repeat animate-spin text-2xl mr-2"></i> Carregando mensagens...</div>';
 
@@ -64,7 +64,7 @@ function abrirConversa(numero) {
         .then(res => res.text())
         .then(html => {
             document.getElementById('mensagens-chat').innerHTML = html;
-            document.getElementById('chat-mensagens')?.scrollTo(0, document.getElementById('chat-mensagens').scrollHeight);
+            document.getElementById('chat-mensagens') ?.scrollTo(0, document.getElementById('chat-mensagens').scrollHeight);
         });
 
     fetch('/zerar-mensagens-novas/' + numero, {
@@ -84,14 +84,14 @@ function atualizarBotButton(ativo) {
         botButton.innerHTML = '<i class="bi bi-hourglass-split animate-spin text-sm"></i> Atualizando...';
 
         fetch('/api/bot/toggle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ numero: numeroAtualSelecionado })
-        })
-        .then(response => response.json())
-        .then(data => {
-            atualizarBotButton(data.botativo);
-        });
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ numero: numeroAtualSelecionado })
+            })
+            .then(response => response.json())
+            .then(data => {
+                atualizarBotButton(data.botativo);
+            });
     };
 }
 
@@ -102,7 +102,7 @@ function carregarNovasMensagens() {
         .then(res => res.text())
         .then(html => {
             document.getElementById('mensagens-chat').innerHTML = html;
-            document.getElementById('chat-mensagens')?.scrollTo(0, document.getElementById('chat-mensagens').scrollHeight);
+            document.getElementById('chat-mensagens') ?.scrollTo(0, document.getElementById('chat-mensagens').scrollHeight);
         });
 }
 
@@ -112,7 +112,7 @@ function atualizarListaContatos() {
         .then(html => {
             document.getElementById('lista-contatos-itens').innerHTML = html;
             if (numeroAtualSelecionado) {
-                document.getElementById('contato-' + numeroAtualSelecionado)?.classList.add('bg-gray-200');
+                document.getElementById('contato-' + numeroAtualSelecionado) ?.classList.add('bg-gray-200');
             }
             filtrarContatos(); // reaplica o filtro após atualizar a lista
         });
@@ -146,38 +146,40 @@ function enviarMensagem() {
     const mensagensDiv = document.getElementById('mensagens-chat');
     const mensagemHTML = `
         <div class="flex justify-end mb-2">
-            <div class="relative rounded-2xl text-[15px] font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit" style="position: relative; background-color: #94ffc3; padding-top: 6px; padding-bottom: 4px;">
+            <div class="relative rounded-2xl text-[15px] font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit" style="position: relative; background-color: #D9FDD3; padding-top: 6px; padding-bottom: 4px;">
                 <span>${mensagem}</span>
                 <small class="block text-xs text-gray-500">enviando...</small>
             </div>
         </div>
     `;
     mensagensDiv.insertAdjacentHTML('beforeend', mensagemHTML);
-    document.getElementById('chat-mensagens')?.scrollTo(0, mensagensDiv.scrollHeight);
+    document.getElementById('chat-mensagens') ?.scrollTo(0, mensagensDiv.scrollHeight);
 
     // Envia para a API
+    const respostaParaEnviar = mensagemRespondida;
+    cancelarResposta();
+
     fetch(window.ROTA_ENVIAR_MENSAGEM, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': window.CSRF_TOKEN
-        },
-        body: JSON.stringify({
-            numero: numeroAtualSelecionado,
-            mensagem: mensagem
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.CSRF_TOKEN
+            },
+          body: JSON.stringify({
+                numero: numeroAtualSelecionado,
+                mensagem: mensagem,
+                resposta: respostaParaEnviar // <- usa a cópia
+            })
         })
-    }).then(res => res.json())
-      .then(data => {
-        if (data.status === 'Mensagem enviada com sucesso') {
-            // Atualiza as mensagens com status real (enviada = true)
-            carregarNovasMensagens();
-        } else {
-            alert(data.erro || 'Erro ao enviar a mensagem.');
-        }
-    });
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'Mensagem enviada com sucesso') {
+                carregarNovasMensagens();
+            } else {
+                alert(data.erro || 'Erro ao enviar a mensagem.');
+            }
+        });
 }
-
-
 
 // -------------------- ÁUDIO --------------------
 const btnIniciarGravacao = document.getElementById('btnIniciarGravacao');
@@ -322,15 +324,15 @@ function enviarAudioBase64(base64audio) {
     const numero = numeroAtualSelecionado.replace(/\D/g, '');
 
     fetch('/api/evolution/enviar-audio-base64', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': window.CSRF_TOKEN },
-        body: JSON.stringify({ numero: numero, audio_base64: base64audio })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'Áudio enviado com sucesso') carregarNovasMensagens();
-        else alert(data.erro || 'Erro ao enviar áudio.');
-    });
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': window.CSRF_TOKEN },
+            body: JSON.stringify({ numero: numero, audio_base64: base64audio })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'Áudio enviado com sucesso') carregarNovasMensagens();
+            else alert(data.erro || 'Erro ao enviar áudio.');
+        });
 }
 
 function converterParaBase64(blob, callback) {
@@ -409,7 +411,8 @@ document.addEventListener('click', (e) => {
         '#pesquisa-contato',
         '#legendaMidia',
         '#emojiPicker',
-        '#btnEmoji'
+        '#btnEmoji',
+        '#inputEditarMensagem'
     ];
 
     for (let seletor of ignorar) {
@@ -515,14 +518,14 @@ btnConfirmarEnvio.addEventListener('click', () => {
     formData.append('caption', legendaMidia.value);
 
     fetch("/api/evolution/enviar-midia", {
-        method: "POST",
-        headers: { "X-CSRF-TOKEN": window.CSRF_TOKEN },
-        body: formData
-    }).then(res => res.json())
-    .then(() => {
-        modal.classList.add('hidden');
-        carregarNovasMensagens();
-    });
+            method: "POST",
+            headers: { "X-CSRF-TOKEN": window.CSRF_TOKEN },
+            body: formData
+        }).then(res => res.json())
+        .then(() => {
+            modal.classList.add('hidden');
+            carregarNovasMensagens();
+        });
 });
 
 const btnEmoji = document.getElementById('btnEmoji');
@@ -712,7 +715,7 @@ function criarPlayerAudio(url) {
                 const player = criarPlayerAudio(url);
                 container.appendChild(player);
             });
-            
+
             audio.play();
             btn.innerHTML = '<i class="bi bi-pause-fill"></i>';
         } else {
