@@ -1,5 +1,4 @@
 @foreach ($contatos as $contato)
-
     @php
         $preview = $contato->mensagem_enviada;
         $icone = '';
@@ -15,19 +14,29 @@
         }
     @endphp
 
-    <div id="contato-{{ $contato->numero_cliente }}" onclick="abrirConversa('{{ $contato->numero_cliente }}')" class="contato flex items-center p-4 border-b cursor-pointer hover:bg-orange-100 transition">
+    <div id="contato-{{ $contato->numero_cliente }}"
+     onclick="abrirConversa('{{ $contato->numero_cliente }}')"
+     class="contato flex items-center p-4 border-b cursor-pointer hover:bg-orange-100 transition"
+     data-lido="{{ $contato->qtd_mensagens_novas == 0 ? 'sim' : 'nao' }}">
         <div class="flex-1">
             <div class="flex items-center justify-between">
-                <div class="font-semibold text-gray-800 numero-cliente">{{ $contato->numero_cliente }}</div>
+                <div>
+                    <div class="font-semibold text-gray-800 numero-cliente">
+                        {{ $contato->nome_cliente ?? 'Sem nome' }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        {{ $contato->numero_cliente }}
+                    </div>
+                </div>
 
                 @if($contato->qtd_mensagens_novas > 0)
-                <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-orange-500 rounded-full">
-                    {{ $contato->qtd_mensagens_novas }}
-                </span>
+                    <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-orange-500 rounded-full">
+                        {{ $contato->qtd_mensagens_novas }}
+                    </span>
                 @endif
             </div>
 
-            <div class="text-xs text-gray-500 truncate">
+            <div class="text-xs text-gray-500 truncate mt-1">
                 {!! $icone ?: Str::limit($preview, 40) !!}
             </div>
         </div>
@@ -35,5 +44,4 @@
             {{ \Carbon\Carbon::parse($contato->data_e_hora_envio)->format('H:i') }}
         </div>
     </div>
-
 @endforeach

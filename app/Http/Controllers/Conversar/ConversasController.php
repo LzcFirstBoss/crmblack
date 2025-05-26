@@ -48,9 +48,10 @@ class ConversasController extends Controller
 
         foreach ($contatos as $contato) {
             $numeroFormatado = $contato->numero_cliente . '@s.whatsapp.net';
-            $contato->qtd_mensagens_novas = optional(
-                \App\Models\Cliente\Cliente::where('telefoneWhatsapp', $numeroFormatado)->first()
-            )->qtd_mensagens_novas ?? 0;
+            $cliente = \App\Models\Cliente\Cliente::where('telefoneWhatsapp', $numeroFormatado)->first();
+
+            $contato->qtd_mensagens_novas = $cliente->qtd_mensagens_novas ?? 0;
+            $contato->nome_cliente = $cliente->nome ?? null;
         }
 
         return view('conversas._parcial', compact('contatos'));

@@ -113,23 +113,49 @@
         <!-- Sidebar: Lista de Contatos -->
         <div class="w-1/3 border-r bg-white flex flex-col" id="lista-contatos">
 
-            <!-- Header: Título + Pesquisa -->
-            <div class="p-4 border-b bg-gray-50">
-                <h2 class="text-lg font-bold text-gray-700 mb-3">Conversas</h2>
+<!-- Header: Título + Pesquisa + Ações -->
+<div class="p-4 border-b bg-gray-50">
+    <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-bold text-gray-700">Conversas</h2>
 
-                <div class="relative">
-                    <input type="text" id="pesquisa-contato" onkeyup="filtrarContatos()" placeholder="Buscar número..."
-                        class="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400">
-                    <i class="bi bi-search absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400"></i>
+        <div class="flex gap-2">
+            <!-- Botão Filtro com Dropdown -->
+            <div class="relative">
+                <button onclick="toggleDropdownFiltro()" id="botaoFiltro" class="flex items-center gap-1 px-3 py-1.5 text-sm bg-white border rounded-lg text-gray-700 hover:bg-gray-100 transition">
+    <i class="bi bi-funnel"></i>
+    <span id="textoFiltro">Todas</span>
+</button>
+
+                <!-- Dropdown -->
+                <div id="dropdownFiltro" class="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10 hidden">
+                    <button onclick="filtrarContatosPorStatus('todas'); toggleDropdownFiltro()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Todas</button>
+                    <button onclick="filtrarContatosPorStatus('nao_lidas'); toggleDropdownFiltro()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Não lidas</button>
+                    <button onclick="filtrarContatosPorStatus('lidas'); toggleDropdownFiltro()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Lidas</button>
                 </div>
             </div>
+            <!-- Botão Novo Lead -->
+            <button onclick="abrirModalNovoLead()" class="flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition">
+                <i class="bi bi-person-plus-fill"></i>
+                Novo Lead
+            </button>
+        </div>
+    </div>
+
+    <div class="relative">
+        <input type="text" id="pesquisa-contato" onkeyup="filtrarContatos()" placeholder="Buscar número..."
+            class="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400">
+        <i class="bi bi-search absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400"></i>
+    </div>
+</div>
+
 
             <!-- Lista de Contatos -->
             <div class="flex-1 overflow-y-auto" id="lista-contatos-itens">
                 @foreach ($contatos as $contato)
                     <div id="contato-{{ $contato->numero_cliente }}"
                         onclick="abrirConversa('{{ $contato->numero_cliente }}')"
-                        class="contato flex items-center p-4 border-b cursor-pointer hover:bg-orange-100 transition">
+                        class="contato flex items-center p-4 border-b cursor-pointer hover:bg-orange-100 transition"
+                        data-lido="{{ $contato->qtd_mensagens_novas == 0 ? 'sim' : 'nao' }}">
                         <div class="flex-1">
                             <div class="flex items-center justify-between">
                                 <div class="font-semibold text-gray-800 numero-cliente">{{ $contato->numero_cliente }}</div>
@@ -367,4 +393,62 @@
     </script>
     <script src="{{ asset('js/conversar/conversar.js') }}"></script>
     <script src="{{ asset('js/conversar/apagar_editar.js') }}"></script>
+    <script>
+let filtroAtual = 'todas';
+let dropdownAberto = false;
+
+function toggleDropdownFiltro() {
+    const dropdown = document.getElementById('dropdownFiltro');
+    dropdownAberto = !dropdownAberto;
+
+    if (dropdownAberto) {
+        dropdown.classList.remove('hidden');
+    } else {
+        dropdown.classList.add('hidden');
+    }
+}
+
+
+// Função única que aplica ambos os filtros
+function aplicarFiltros() {
+    const termo = document.getElementById('pesquisa-contato').value.toLowerCase();
+    const contatos = document.querySelectorAll('#lista-contatos-itens .contato');
+
+    contatos.forEach(contato => {
+        const numero = contato.querySelector('.numero-cliente')?.textContent.toLowerCase() || '';
+        const lido = contato.getAttribute('data-lido'); // 'sim' ou 'nao'
+
+        let passaFiltroTexto = numero.includes(termo);
+        let passaFiltroStatus = (
+            filtroAtual === 'todas' ||
+            (filtroAtual === 'nao_lidas' && lido === 'nao') ||
+            (filtroAtual === 'lidas' && lido === 'sim')
+        );
+
+        contato.style.display = (passaFiltroTexto && passaFiltroStatus) ? 'flex' : 'none';
+    });
+}
+
+// Aplicar filtro de texto ao digitar
+function filtrarContatos() {
+    aplicarFiltros();
+}
+
+// Alterar status do filtro e aplicar
+function filtrarContatosPorStatus(status) {
+    filtroAtual = status;
+
+    // Atualiza o texto do botão com o filtro atual
+    const textoFiltro = document.getElementById('textoFiltro');
+    if (textoFiltro) {
+        if (status === 'todas') textoFiltro.textContent = 'Todas';
+        else if (status === 'nao_lidas') textoFiltro.textContent = 'Não lidas';
+        else if (status === 'lidas') textoFiltro.textContent = 'Lidas';
+    }
+
+    aplicarFiltros();
+}
+
+
+    </script>
 @endsection

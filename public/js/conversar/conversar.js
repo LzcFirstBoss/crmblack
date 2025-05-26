@@ -111,12 +111,37 @@ function atualizarListaContatos() {
         .then(res => res.text())
         .then(html => {
             document.getElementById('lista-contatos-itens').innerHTML = html;
+
+            // Marca visualmente o contato atual
             if (numeroAtualSelecionado) {
-                document.getElementById('contato-' + numeroAtualSelecionado) ?.classList.add('bg-gray-200');
+                const atual = document.getElementById('contato-' + numeroAtualSelecionado);
+                if (atual) atual.classList.add('bg-gray-200');
             }
-            filtrarContatos(); // reaplica o filtro após atualizar a lista
+
+            // Reaplica filtros
+            filtrarContatos();
+            filtrarContatosPorStatus(filtroAtual);
+
+            // Reabrir dropdown se estava aberto
+            const dropdown = document.getElementById('dropdownFiltro');
+            if (dropdownAberto && dropdown) {
+                dropdown.classList.remove('hidden');
+            }
+
+            // Atualizar texto do botão de filtro
+            const btnFiltro = document.querySelector('[onclick="toggleDropdownFiltro()"] i');
+            if (btnFiltro) {
+                let label = 'Filtro';
+                if (filtroAtual === 'nao_lidas') label = 'Não lidas';
+                else if (filtroAtual === 'lidas') label = 'Lidas';
+                else label = 'Todas';
+
+                btnFiltro.parentElement.childNodes[1].nodeValue = ` ${label}`;
+            }
         });
 }
+
+
 
 
 setInterval(atualizarListaContatos, 2000);

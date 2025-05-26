@@ -22,4 +22,6 @@ class Cliente extends Model
     ];
 
     public $timestamps = false; // se sua tabela não usa created_at/updated_at
+
+    // App\Models\Webhook\Mensagem.php
 }

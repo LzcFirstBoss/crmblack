@@ -39,4 +39,9 @@ class Mensagem extends Model
     {
         return $this->belongsTo(Mensagem::class, 'mensagem_respondida_id');
     }
+
+        public function cliente()
+    {
+        return $this->belongsTo(\App\Models\Cliente\Cliente::class, 'numero_cliente', 'telefoneWhatsapp');
+    }
 }
