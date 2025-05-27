@@ -126,6 +126,20 @@ class ApiController extends Controller
 
                 $numero = $request->telefoneWhatsapp;
 
+                $usuarios = User::all();
+                $linkNumero = preg_replace('/@s\.whatsapp\.net$/', '', $evento->numerocliente);
+
+                foreach ($usuarios as $usuario) {
+                    Notificacao::create([
+                        'user_id' => $usuario->id,
+                        'titulo' => 'Consulta agendada',
+                        'mensagem' => 'Uma nova Consulta foi agendada para ' . \Carbon\Carbon::parse($request->inicio)->format('d/m/Y H:i'),
+                        'tipo' => 'reuniao_agendada',
+                        'link' => $linkNumero,
+                        'dados' => json_encode(['n_atendimento' => $evento->n_atendimento])
+                    ]);
+                }
+
                // Envia para WebSocket
                 Http::post('http://localhost:3001/enviar', [
                     'evento' => 'novaNotificacao',

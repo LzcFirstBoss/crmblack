@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // WebSocket para notificações em tempo real
 if (!window.socketNotificacoes) {
-    window.socketNotificacoes = new WebSocket(`ws://localhost:3000?token=ec877fe5f7a3562a97a7f1ed438ce377a07cd5ce`);
+    window.socketNotificacoes = new WebSocket(`wss://wb.zabulonmarketing.com.br?token=ec877fe5f7a3562a97a7f1ed438ce377a07cd5ce`);
 
     window.socketNotificacoes.onopen = () => {
         console.log('✅ WebSocket de notificações conectado');
@@ -78,7 +78,7 @@ function carregarNotificacoes() {
             }
 
             lista.innerHTML = data.map(n => {
-                const linkVisualizar = n.tipo === 'reuniao_remarcada'
+                const linkVisualizar = n.tipo === 'reuniao_remarcada' || n.tipo === 'reuniao_agendada'
                     ? `<a href="conversar?numero=${n.link}" class="text-blue-600 hover:text-blue-800 text-sm" title="Visualizar">
                             <i class="bi bi-eye"></i>
                        </a>`
