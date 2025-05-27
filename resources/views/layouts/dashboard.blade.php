@@ -79,7 +79,7 @@
                     </a>
                     </a>
                                         <a href="{{ url('/leads') }}"
-                        class="flex items-center gap-3 px-3 py-2 rounded transition {{ request()->is('disparo') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
+                        class="flex items-center gap-3 px-3 py-2 rounded transition {{ request()->is('leads') ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-orange-600 hover:text-white' }}">
                         <i class="bi bi-people"></i> <span class="sidebar-text">Leads</span>
                     </a>
                 </nav>

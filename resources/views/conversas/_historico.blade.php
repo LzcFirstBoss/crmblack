@@ -88,16 +88,27 @@
                 $extensao = pathinfo($nomeArquivo, PATHINFO_EXTENSION);
             @endphp
 
-            @if ($isMe && $msg->status === 'apagado')
-                <div class="flex flex-col gap-1">
-                    <div class="break-words leading-tight text-[15px] font-normal text-gray-500 line-through">
-                        {!! nl2br(e($conteudo)) !!}
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-red-600 italic">
-                        <i class="bi bi-x-circle"></i>
-                        Esta mensagem foi apagada para todos.
-                    </div>
-                </div>
+@if ($isMe && $msg->status === 'apagado')
+    <div class="flex flex-col gap-1">
+        <div class="break-words leading-tight text-[15px] font-normal text-gray-500 line-through">
+            {!! nl2br(e($conteudo)) !!}
+        </div>
+        <div class="flex items-center gap-2 text-sm text-red-600 italic">
+            <i class="bi bi-x-circle"></i>
+            Esta mensagem foi apagada para todos.
+        </div>
+    </div>
+@elseif ($isMe && $msg->status === 'erro')
+    <div class="flex flex-col gap-1">
+        <div class="break-words leading-tight text-[15px] font-normal text-red-600">
+            {!! nl2br(e($conteudo)) !!}
+        </div>
+        <div class="flex items-center gap-2 text-sm text-red-500 italic">
+            <i class="bi bi-exclamation-circle"></i>
+            Erro ao enviar mensagem.
+        </div>
+    </div>
+
             @elseif ($ehImagem || $ehAudio || $ehVideo || $ehArquivo)
                 <div class="{{ ($ehImagem || $ehVideo) ? 'media-clickable cursor-pointer' : '' }}"
                      data-type="{{ $ehImagem ? 'image' : ($ehVideo ? 'video' : '') }}"
