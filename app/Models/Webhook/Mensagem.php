@@ -44,4 +44,16 @@ class Mensagem extends Model
     {
         return $this->belongsTo(\App\Models\Cliente\Cliente::class, 'numero_cliente', 'telefoneWhatsapp');
     }
+
+        public function getUltimaMensagemClienteAttribute()
+    {
+        $numeroLimpo = preg_replace('/@.*/', '', $this->telefoneWhatsapp);
+
+        $mensagem = Mensagem::where('numero_cliente', $numeroLimpo)
+            ->where('enviado_por_mim', false)
+            ->orderByDesc('data_e_hora_envio')
+            ->first();
+
+        return $mensagem?->data_e_hora_envio;
+    }
 }

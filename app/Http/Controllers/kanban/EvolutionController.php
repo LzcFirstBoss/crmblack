@@ -210,12 +210,17 @@ class EvolutionController extends Controller
             curl_close($curl);
 
             if ($erroCurl) {
+                $mensagemSalva->update(['status' => 'erro']);
+
                 return response()->json(['erro' => 'Erro ao conectar na API Evolution: ' . $erroCurl], 500);
             }
+
 
             $resposta = json_decode($response, true);
 
             if (isset($resposta['status']) && $resposta['status'] == 400) {
+                $mensagemSalva->update(['status' => 'erro']);
+
                 return response()->json([
                     'erro' => 'Erro da Evolution: ' . json_encode($resposta['response']['message'][0][0] ?? 'Erro desconhecido')
                 ], 400);

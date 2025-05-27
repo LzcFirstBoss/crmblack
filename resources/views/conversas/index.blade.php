@@ -134,10 +134,11 @@
                 </div>
             </div>
             <!-- Botão Novo Lead -->
-            <button onclick="abrirModalNovoLead()" class="flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition">
-                <i class="bi bi-person-plus-fill"></i>
-                Novo Lead
-            </button>
+            <a href="{{ route('leads.create') }}"
+                class="flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition">
+                    <i class="bi bi-person-plus-fill"></i>
+                    Novo Lead
+            </a>
         </div>
     </div>
 

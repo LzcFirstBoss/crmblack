@@ -10,6 +10,7 @@
     use App\Http\Controllers\Dashboard\DashboardController;
     use App\Http\Controllers\Disparo\DisparoController;
     use App\Http\Controllers\Notificacao\NotificacaoController;
+    use App\Http\Controllers\Leads\LeadsController;
 
 
     //rotas de login
@@ -84,4 +85,14 @@
         Route::get('/notificacoes/listar', [NotificacaoController::class, 'listar']);
         Route::post('/notificacoes/marcar-todas-como-lidas', [NotificacaoController::class, 'marcarTodasComoLidas']);
         Route::delete('/notificacoes/{id}', [NotificacaoController::class, 'deletar'])->middleware('auth');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/leads', [LeadsController::class, 'index'])->name('leads.index');
+        Route::get('/leads/criar', [LeadsController::class, 'create'])->name('leads.create');
+        Route::post('/leads', [LeadsController::class, 'store'])->name('leads.store');
+        Route::get('/leads/{id}', [LeadsController::class, 'show'])->name('leads.show');
+        Route::get('/leads/{id}/editar', [LeadsController::class, 'edit'])->name('leads.edit');
+        Route::put('/leads/{id}', [LeadsController::class, 'update'])->name('leads.update');
+        Route::delete('/leads/{id}', [LeadsController::class, 'destroy'])->name('leads.destroy');
     });
