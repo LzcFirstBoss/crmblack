@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use App\Models\Notificacao\Notificacao;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller
 {
@@ -324,6 +325,76 @@ class ApiController extends Controller
                 return response()->json([
                     'erro' => 'Erro ao cancelar Consulta',
                     'detalhes' => $e->getMessage()
+                ], 500);
+            }
+        }
+
+        public function listarFunis(Request $request)
+        {
+            try {
+                $this->validarChave($request);
+
+                $funis = DB::table('status')->select('id', 'nome', 'descricao')->get();
+
+                return response()->json($funis);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'erro' => 'Erro ao listar funis',
+                    'mensagem' => $e->getMessage(),
+                    'linha' => $e->getLine(),
+                    'arquivo' => $e->getFile()
+                ], $e->getCode() ?: 500);
+            }
+        }
+
+        public function mudarFunilCliente(Request $request)
+        {
+            try {
+                $this->validarChave($request);
+
+                $validator = Validator::make($request->all(), [
+                    'telefoneWhatsapp' => 'required|string',
+                    'status_id' => 'required|integer|exists:status,id',
+                ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'erro' => 'Validação falhou',
+                        'mensagens' => $validator->errors()
+                    ], 422);
+                }
+
+                $cliente = Cliente::where('telefoneWhatsapp', $request->telefoneWhatsapp)->first();
+
+                if (!$cliente) {
+                    return response()->json(['erro' => 'Cliente não encontrado.'], 404);
+                }
+
+                $cliente->status_id = $request->status_id;
+                $cliente->save();
+
+                Http::post('http://localhost:3001/enviar', [
+                    'evento' => 'kanban:moverPorNumero',
+                    'dados' => [
+                        'numero' => preg_replace('/@s\.whatsapp\.net$/', '', $cliente->telefoneWhatsapp),
+                        'status' => $cliente->status_id
+                    ]
+                ]);
+
+                return response()->json([
+                    'mensagem' => 'Funil do cliente atualizado com sucesso.',
+                    'cliente' => [
+                        'nome' => $cliente->nome ?? null,
+                        'telefoneWhatsapp' => $cliente->telefoneWhatsapp,
+                        'status_id' => $cliente->status_id
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'erro' => 'Erro interno',
+                    'mensagem' => $e->getMessage()
                 ], 500);
             }
         }

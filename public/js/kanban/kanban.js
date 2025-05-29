@@ -5,6 +5,19 @@ socket.onopen = () => console.log("Conectado ao WebSocket");
 socket.onmessage = (event) => {
     const mensagem = JSON.parse(event.data);
 
+    if (mensagem.evento === 'kanban:moverPorNumero') {
+        const numero = mensagem.dados.numero;
+        const status = mensagem.dados.status;
+
+        const card = document.querySelector(`.kanban-card[data-numero="${numero}"]`);
+        const colunaDestino = document.getElementById(`status-${status}`);
+
+        if (card && colunaDestino) {
+            card.remove(); 
+            colunaDestino.appendChild(card);
+        }
+    }
+
     if (mensagem.evento === 'kanban:zerarNotificacao') {
     const card = document.querySelector(`.kanban-card[data-numero="${mensagem.dados.numero}"]`);
     if (card) {
@@ -14,7 +27,7 @@ socket.onmessage = (event) => {
 
     const contato = document.querySelector(`#contato-${mensagem.dados.numero} .notificacao-bolinha`);
     if (contato) contato.remove();
-}
+    }
 
 
     if (mensagem.evento === 'kanban:moverCard') {

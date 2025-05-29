@@ -1,44 +1,46 @@
-<?php
+    <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Webhook\WebhookController;
-use App\Http\Controllers\Calendario\ApiController;
-use App\Models\Cliente\Cliente;
-
-
-    Route::post('/receber-mensagem', [WebhookController::class, 'receberMensagem']);
-
-    Route::prefix('calendario')->group(function () {
-        Route::post('/disponiveis', [ApiController::class, 'horariosDisponiveis']);
-        Route::post('/agendar', [ApiController::class, 'agendarReuniao']);
-        Route::post('/reagendar', [ApiController::class, 'reagendarReuniao']);
-        Route::post('/cancelar', [ApiController::class, 'cancelarReuniao']);
-    });
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Route;
+    use App\Http\Controllers\Webhook\WebhookController;
+    use App\Http\Controllers\Calendario\ApiController;
+    use App\Models\Cliente\Cliente;
 
 
-    // Obter status do bot
-    Route::get('/bot/status/{numero}', function ($numero) {
-        $cliente = Cliente::where('telefoneWhatsapp', $numero . '@s.whatsapp.net')->first();
-        return response()->json([
-            'botativo' => (bool) ($cliente->botativo ?? false),
-        ]);
-    });
+        Route::post('/receber-mensagem', [WebhookController::class, 'receberMensagem']);
 
-    // Alternar status do bot
-    Route::post('/bot/toggle', function (Request $request) {
-        $numero = $request->input('numero');
+        Route::prefix('calendario')->group(function () {
+            Route::post('/disponiveis', [ApiController::class, 'horariosDisponiveis']);
+            Route::post('/agendar', [ApiController::class, 'agendarReuniao']);
+            Route::post('/reagendar', [ApiController::class, 'reagendarReuniao']);
+            Route::post('/cancelar', [ApiController::class, 'cancelarReuniao']);
+        });
 
-        if (!$numero) return response()->json(['erro' => 'Número não informado'], 400);
+        Route::get('/status/funis', [ApiController::class, 'listarFunis']);
+        Route::post('/cliente/mudar-funil', [ApiController::class, 'mudarFunilCliente']);
 
-        $cliente = Cliente::where('telefoneWhatsapp', $numero . '@s.whatsapp.net')->first();
+        // Obter status do bot
+        Route::get('/bot/status/{numero}', function ($numero) {
+            $cliente = Cliente::where('telefoneWhatsapp', $numero . '@s.whatsapp.net')->first();
+            return response()->json([
+                'botativo' => (bool) ($cliente->botativo ?? false),
+            ]);
+        });
 
-        if (!$cliente) return response()->json(['erro' => 'Cliente não encontrado'], 404);
+        // Alternar status do bot
+        Route::post('/bot/toggle', function (Request $request) {
+            $numero = $request->input('numero');
 
-        $cliente->botativo = !$cliente->botativo;
-        $cliente->save();
+            if (!$numero) return response()->json(['erro' => 'Número não informado'], 400);
 
-        return response()->json([
-            'botativo' => (bool) $cliente->botativo
-        ]);
-    });
+            $cliente = Cliente::where('telefoneWhatsapp', $numero . '@s.whatsapp.net')->first();
+
+            if (!$cliente) return response()->json(['erro' => 'Cliente não encontrado'], 404);
+
+            $cliente->botativo = !$cliente->botativo;
+            $cliente->save();
+
+            return response()->json([
+                'botativo' => (bool) $cliente->botativo
+            ]);
+        });
