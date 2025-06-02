@@ -8,6 +8,7 @@ let cancelado = false;
 let tempoGravado = 0;
 let intervaloTempo = null;
 
+
 // Verificar se veio número pela URL
 const urlParams = new URLSearchParams(window.location.search);
 const numeroSelecionadoInicial = urlParams.get('numero');
@@ -758,35 +759,6 @@ btnConfirmarEnvio.addEventListener('click', () => {
     document.getElementById('inputFotoVideo').value = '';
 });
 
-const emojiPickerContainer = document.getElementById('emojiPicker');
-
-// Fechar ao clicar fora
-document.addEventListener('click', (e) => {
-    if (!emojiPickerContainer.contains(e.target) && e.target !== btnEmoji) {
-        emojiPickerContainer.classList.add('hidden');
-    }
-});
-
-function insertEmoji(emoji) {
-    inputMensagemEmoji.focus();
-
-    const range = document.createRange();
-    range.selectNodeContents(inputMensagemEmoji);
-    range.collapse(false);
-
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-
-    const emojiNode = document.createTextNode(emoji);
-    range.insertNode(emojiNode);
-
-    range.setStartAfter(emojiNode);
-    sel.removeAllRanges();
-    sel.addRange(range);
-}
-
-
 
 let mediaItens = [];
 let mediaIndex = 0;
@@ -958,3 +930,60 @@ function filtrarContatos() {
         }
     });
 }
+
+
+// Filtros
+        let filtroAtual = 'todas';
+        let dropdownAberto = false;
+
+        function toggleDropdownFiltro() {
+            const dropdown = document.getElementById('dropdownFiltro');
+            dropdownAberto = !dropdownAberto;
+
+            if (dropdownAberto) {
+                dropdown.classList.remove('hidden');
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+
+        // Função única que aplica ambos os filtros
+        function aplicarFiltros() {
+            const termo = document.getElementById('pesquisa-contato').value.toLowerCase();
+            const contatos = document.querySelectorAll('#lista-contatos-itens .contato');
+
+            contatos.forEach(contato => {
+                const numero = contato.querySelector('.numero-cliente')?.textContent.toLowerCase() || '';
+                const lido = contato.getAttribute('data-lido'); // 'sim' ou 'nao'
+
+                let passaFiltroTexto = numero.includes(termo);
+                let passaFiltroStatus = (
+                    filtroAtual === 'todas' ||
+                    (filtroAtual === 'nao_lidas' && lido === 'nao') ||
+                    (filtroAtual === 'lidas' && lido === 'sim')
+                );
+
+                contato.style.display = (passaFiltroTexto && passaFiltroStatus) ? 'flex' : 'none';
+            });
+        }
+
+        // Aplicar filtro de texto ao digitar
+        function filtrarContatos() {
+            aplicarFiltros();
+        }
+
+        // Alterar status do filtro e aplicar
+        function filtrarContatosPorStatus(status) {
+            filtroAtual = status;
+
+            // Atualiza o texto do botão com o filtro atual
+            const textoFiltro = document.getElementById('textoFiltro');
+            if (textoFiltro) {
+                if (status === 'todas') textoFiltro.textContent = 'Todas';
+                else if (status === 'nao_lidas') textoFiltro.textContent = 'Não lidas';
+                else if (status === 'lidas') textoFiltro.textContent = 'Lidas';
+            }
+
+            aplicarFiltros();
+        }

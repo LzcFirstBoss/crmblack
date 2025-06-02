@@ -56,7 +56,7 @@
          data-numero="{{ $msg->numero_cliente }}"
          id="mensagem-{{ $msg->id }}"
          data-fromme="{{ $isMe ? 'true' : 'false' }}">
-        <div class="relative group rounded-2xl text-[15px] shadow-lg font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit"
+        <div class="msg relative group rounded-2xl text-[15px] shadow-lg font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit"
              style="background-color: {{ $corHex }}; padding-top: 6px; padding-bottom: 4px;">
 
             {{-- Setinha --}}
