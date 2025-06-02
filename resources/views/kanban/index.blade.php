@@ -2,6 +2,10 @@
 <title>Zabulon - CRM</title>
 @section('content')
     <style>
+        .kanban-column-wrapper {
+    width: 340px;
+    flex-shrink: 0;
+}
         .color-picker {
             -webkit-appearance: none;
             border: none;
@@ -70,7 +74,7 @@
 
 
         <!-- KANBAN COLUNAS -->
-        <div id="kanban-colunas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div id="kanban-colunas" class="grid grid-cols-1 ">
             @include('kanban._parcial')
         </div>
     </div>
