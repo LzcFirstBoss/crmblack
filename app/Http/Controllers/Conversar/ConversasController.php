@@ -56,12 +56,31 @@ class ConversasController extends Controller
 
         return view('conversas._parcial', compact('contatos'));
     }
-      
+     
+    public function parcialItem($numero)
+    {
+        $numero = preg_replace('/[^0-9]/', '', $numero); // limpeza de segurança
+        $numeroComDominio = $numero . '@s.whatsapp.net';
+
+        $mensagem = Mensagem::where('numero_cliente', $numero)
+            ->orderByDesc('data_e_hora_envio')
+            ->with('usuario')
+            ->first();
+
+        if (!$mensagem) return '';
+
+        $cliente = Cliente::where('telefoneWhatsapp', $numeroComDominio)->first();
+
+        $mensagem->qtd_mensagens_novas = $cliente->qtd_mensagens_novas ?? 0;
+        $mensagem->nome_cliente = $cliente->nome ?? null;
+
+        return view('conversas._parcial_item', ['contato' => $mensagem]);
+    }
 
     public function historico($numero)
     {
         $mensagens = Mensagem::where('numero_cliente', $numero)
-            ->with(['usuario', 'mensagem_respondida']) // <-- adiciona esse relacionamento
+            ->with(['usuario', 'mensagem_respondida'])
             ->orderBy('data_e_hora_envio', 'asc')
             ->get();
 

@@ -107,6 +107,19 @@
             filter: brightness(0.85);
             transition: filter 0.3s ease;
         }
+
+        #lista-contatos-itens::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #lista-contatos-itens::-webkit-scrollbar-thumb {
+            background-color: #fe803269;
+            border-radius: 6px;
+        }
+
+        #lista-contatos-itens::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+        }
     </style>
 
     <div class="flex h-[calc(100vh-70px)] bg-gray-100">
@@ -151,32 +164,8 @@
 
 
             <!-- Lista de Contatos -->
-            <div class="flex-1 overflow-y-auto" id="lista-contatos-itens">
-                @foreach ($contatos as $contato)
-                    <div id="contato-{{ $contato->numero_cliente }}"
-                        onclick="abrirConversa('{{ $contato->numero_cliente }}')"
-                        class="contato flex items-center p-4 border-b cursor-pointer hover:bg-orange-100 transition"
-                        data-lido="{{ $contato->qtd_mensagens_novas == 0 ? 'sim' : 'nao' }}">
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between">
-                                <div class="font-semibold text-gray-800 numero-cliente">{{ $contato->numero_cliente }}</div>
-
-                                @if ($contato->qtd_mensagens_novas > 0)
-                                    <span
-                                        class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-orange-500 rounded-full">
-                                        {{ $contato->qtd_mensagens_novas }}
-                                    </span>
-                                @endif
-                            </div>
-                            <div class="text-xs text-gray-500 truncate">
-                                {{ Str::limit($contato->mensagem_enviada, 40) }}
-                            </div>
-                        </div>
-                        <div class="text-xs text-gray-400 whitespace-nowrap ml-2">
-                            {{ \Carbon\Carbon::parse($contato->data_e_hora_envio)->format('H:i') }}
-                        </div>
-                    </div>
-                @endforeach
+            <div class="flex-1 overflow-y-auto overflow-x-hidden " id="lista-contatos-itens">
+               
             </div>
         </div>
 

@@ -62,6 +62,7 @@
         Route::get('/conversar', [ConversasController::class, 'index'])->name('conversas.index');
         Route::get('/conversar/{numero}', [ConversasController::class, 'historico'])->name('conversas.historico');
         Route::get('/conversar-parcial', [ConversasController::class, 'parcial'])->name('conversas.parcial');
+        Route::get('/conversar-parcial-item/{numero}', [ConversasController::class, 'parcialItem']);
         Route::post('/zerar-mensagens-novas/{numero}', [ConversasController::class, 'zerarMensagensNovas'])->name('conversas.zerarMensagensNovas');
     });
 

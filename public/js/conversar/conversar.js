@@ -16,22 +16,37 @@ if (numeroSelecionadoInicial) {
     abrirConversa(numeroSelecionadoInicial);
 }
 
-
 // Conectar WebSocket
 function conectarWebSocket() {
     const token = window.WEBSOCKET_TOKEN;
     socket = new WebSocket(`wss://wb.zabulonmarketing.com.br?token=${token}`);
 
     socket.onopen = () => console.log('Conectado ao WebSocket');
+
     socket.onmessage = (event) => {
         const mensagem = JSON.parse(event.data);
-        if (mensagem.evento === 'kanban:novaMensagem' && mensagem.dados.numero === numeroAtualSelecionado) {
-            carregarNovasMensagens();
+        console.log('[WebSocket Recebido]', mensagem); // 👈 Log completo
+
+        if (mensagem.evento === 'kanban:novaMensagem') {
+            const numero = mensagem.dados.numero;
+
+            // Atualiza chat aberto
+            if (numero === numeroAtualSelecionado) {
+                carregarNovasMensagens();
+            }
+
+            // Atualiza visualmente o item na lista
+            atualizarContatoNaLista(mensagem.dados);
         }
     };
 }
 
 conectarWebSocket();
+
+window.addEventListener('DOMContentLoaded', () => {
+    recarregarListaContatosCompleta();
+});
+
 
 function abrirConversa(numero) {
     numeroAtualSelecionado = numero;
@@ -70,7 +85,7 @@ function abrirConversa(numero) {
     fetch('/zerar-mensagens-novas/' + numero, {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': window.CSRF_TOKEN }
-    }).then(atualizarListaContatos);
+    }).then(recarregarListaContatosCompleta);
 }
 
 function atualizarBotButton(ativo) {
@@ -95,8 +110,6 @@ function atualizarBotButton(ativo) {
     };
 }
 
-
-
 function carregarNovasMensagens() {
     fetch('/conversar/' + numeroAtualSelecionado)
         .then(res => res.text())
@@ -106,7 +119,32 @@ function carregarNovasMensagens() {
         });
 }
 
-function atualizarListaContatos() {
+function atualizarContatoNaLista(dados) {
+    const numero = dados.numero;
+    fetch(`/conversar-parcial-item/${numero}`)
+        .then(res => res.text())
+        .then(html => {
+            const contatoEl = document.getElementById('contato-' + numero);
+
+            if (contatoEl) {
+                contatoEl.remove(); // Remove o antigo
+            }
+
+            const lista = document.getElementById('lista-contatos-itens');
+            lista.insertAdjacentHTML('afterbegin', html); // Insere o novo no topo
+
+            // Marca como selecionado se for o atual
+            if (numero === numeroAtualSelecionado) {
+                document.getElementById('contato-' + numero)?.classList.add('bg-gray-200');
+            }
+
+            filtrarContatos(); // Mantém filtros aplicados
+            filtrarContatosPorStatus(filtroAtual);
+        })
+        .catch(err => console.error('Erro ao atualizar item da lista:', err));
+}
+
+function recarregarListaContatosCompleta() {
     fetch('/conversar-parcial')
         .then(res => res.text())
         .then(html => {
@@ -140,11 +178,6 @@ function atualizarListaContatos() {
             }
         });
 }
-
-
-
-
-setInterval(atualizarListaContatos, 2000);
 
 function enviarMensagem() {
     const mensagemInput = document.getElementById('input-mensagem');
