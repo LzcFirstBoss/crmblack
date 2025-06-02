@@ -65,6 +65,16 @@ if (!window.socketNotificacoes) {
 
 // Carregar notificações (manual e automático)
 function carregarNotificacoes() {
+        function formatarTempo(isoDate) {
+        const data = new Date(isoDate);
+        const agora = new Date();
+        const diff = Math.floor((agora - data) / 1000);
+        if (diff < 60) return `Há ${diff} segundos`;
+        if (diff < 3600) return `Há ${Math.floor(diff / 60)} minutos`;
+        if (diff < 86400) return `Há ${Math.floor(diff / 3600)} horas`;
+        return `Há ${Math.floor(diff / 86400)} dia${Math.floor(diff / 86400) > 1 ? 's' : ''}`;
+    }
+
     fetch('/notificacoes/listar')
         .then(res => res.json())
         .then(data => {
@@ -148,13 +158,4 @@ document.addEventListener('click', function (event) {
     }
 });
 
-// Formatar data/hora
-function formatarTempo(isoDate) {
-    const data = new Date(isoDate);
-    const agora = new Date();
-    const diff = Math.floor((agora - data) / 1000);
-    if (diff < 60) return `Há ${diff} segundos`;
-    if (diff < 3600) return `Há ${Math.floor(diff / 60)} minutos`;
-    if (diff < 86400) return `Há ${Math.floor(diff / 3600)} horas`;
-    return `Há ${Math.floor(diff / 86400)} dia${Math.floor(diff / 86400) > 1 ? 's' : ''}`;
-}
+
