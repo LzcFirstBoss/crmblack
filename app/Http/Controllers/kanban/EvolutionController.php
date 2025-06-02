@@ -339,80 +339,148 @@ class EvolutionController extends Controller
         $EVOLUTION_INSTANCE_ID = env('EVOLUTION_INSTANCE_ID');
         $EVOLUTION_API_URL = env('EVOLUTION_API_URL');
         $EVOLUTION_API_KEY = env('EVOLUTION_API_KEY');
-    
-        // Validar campos
+
         $request->validate([
             'numero' => 'required',
-            'arquivo' => 'required|file',
+            'arquivos' => 'required|array|max:5',
+            'arquivos.*' => 'required|file|max:10240', // 10MB por arquivo
             'mediatype' => 'required|in:image,video,document,audio',
             'caption' => 'nullable|string'
         ]);
-    
-        // Preparar dados
+
         $numero = preg_replace('/\D/', '', $request->numero);
-        $arquivo = $request->file('arquivo');
-        $base64 = base64_encode(file_get_contents($arquivo));
-        $fileName = $arquivo->getClientOriginalName();
-    
-        // === SALVAR O ARQUIVO ===
-        $tipoDiretorio = match ($request->mediatype) {
-            'image' => 'images',
-            'video' => 'videos',
-            'audio' => 'audios',
-            'document' => 'documents',
-            default => 'others',
-        };
-    
-        // Caminho que será salvo
-        $path = "uploads/{$numero}/{$tipoDiretorio}";
-    
-        // Salvar arquivo
-        $caminhoSalvo = $arquivo->storeAs("public/{$path}", $fileName);
-    
-        // TIRAR O "public/" para salvar apenas o caminho relativo desejado
-        $caminhoParaBanco = str_replace("public/", "", $caminhoSalvo);
-    
-        // === ENVIAR PARA EVOLUTION ===
-        $dados = [
-            "number" => $numero . "@s.whatsapp.net",
-            "options" => [
-                "delay" => 100,
-                "presence" => "composing"
-            ],
-            "mediatype" => $request->mediatype,
-            "caption" => $request->caption ?? '',
-            "media" => $base64,
-            "fileName" => $fileName
-        ];
-    
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'apikey' => $EVOLUTION_API_KEY
-        ])->post("$EVOLUTION_API_URL/message/sendMedia/$EVOLUTION_INSTANCE_ID", $dados);
-    
-        $resposta = $response->json();
-    
-        if (isset($resposta['status']) && $resposta['status'] == 400) {
-            return response()->json(['erro' => $resposta['response']['message'] ?? 'Erro desconhecido'], 400);
+        $numeroEvolution = $numero . '@s.whatsapp.net';
+
+        $resultados = [];
+
+        foreach ($request->file('arquivos') as $arquivo) {
+            try {
+                // === Preparar dados ===
+                $base64 = base64_encode(file_get_contents($arquivo));
+                $extensao = $arquivo->getClientOriginalExtension();
+                $fileName = time() . '_' . uniqid() . '.' . $extensao;
+
+                $tipoDiretorio = match ($request->mediatype) {
+                    'image' => 'images',
+                    'video' => 'videos',
+                    'audio' => 'audios',
+                    'document' => 'documents',
+                    default => 'others',
+                };
+
+                $path = "uploads/{$numero}/{$tipoDiretorio}";
+                $caminhoSalvo = $arquivo->storeAs("public/{$path}", $fileName);
+                $caminhoParaBanco = str_replace('public/', '', $caminhoSalvo);
+
+                // === Salvar no banco com status "enviando" ===
+                $mensagem = Mensagem::create([
+                    'numero_cliente' => $numero,
+                    'tipo_de_mensagem' => $request->mediatype,
+                    'mensagem_enviada' => $caminhoParaBanco,
+                    'data_e_hora_envio' => now(),
+                    'enviado_por_mim' => true,
+                    'usuario_id' => auth()->id(),
+                    'bot' => false,
+                    'status' => 'enviando'
+                ]);
+
+                // === Enviar para Evolution ===
+                $payload = [
+                    'number' => $numeroEvolution,
+                    'options' => [
+                        'delay' => 100,
+                        'presence' => 'composing',
+                    ],
+                    'mediatype' => $request->mediatype,
+                    'caption' => $request->caption ?? '',
+                    'media' => $base64,
+                    'fileName' => $fileName
+                ];
+
+                $url = "{$EVOLUTION_API_URL}/message/sendMedia/{$EVOLUTION_INSTANCE_ID}";
+
+                $curl = curl_init();
+                curl_setopt_array($curl, [
+                    CURLOPT_URL => $url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_POST => true,
+                    CURLOPT_HTTPHEADER => [
+                        'Content-Type: application/json',
+                        "apikey: {$EVOLUTION_API_KEY}",
+                    ],
+                    CURLOPT_POSTFIELDS => json_encode($payload),
+                    CURLOPT_TIMEOUT => 30,
+                    CURLOPT_CONNECTTIMEOUT => 10,
+                ]);
+
+                $response = curl_exec($curl);
+                $erroCurl = curl_error($curl);
+                curl_close($curl);
+
+                // === Tratamento de erro cURL ===
+                if ($erroCurl) {
+                    $mensagem->update(['status' => 'erro']);
+                    $resultados[] = [
+                        'arquivo' => $fileName,
+                        'status' => 'erro',
+                        'mensagem' => 'Erro cURL: ' . $erroCurl
+                    ];
+                    continue;
+                }
+
+                // === Tratamento para resposta vazia ou inválida ===
+                if (!$response || empty(trim($response))) {
+                    $mensagem->update(['status' => 'erro']);
+                    $resultados[] = [
+                        'arquivo' => $fileName,
+                        'status' => 'erro',
+                        'mensagem' => 'Sem resposta da API da Evolution (timeout ou falha).'
+                    ];
+                    continue;
+                }
+
+                $resposta = json_decode($response, true);
+
+                // === Tratamento para erro 400 da API ===
+                if (isset($resposta['status']) && $resposta['status'] == 400) {
+                    $mensagem->update(['status' => 'erro']);
+                    $mensagemErro = $resposta['response']['message'][0][0] ?? 'Erro desconhecido';
+                    $resultados[] = [
+                        'arquivo' => $fileName,
+                        'status' => 'erro',
+                        'mensagem' => json_encode($mensagemErro)
+                    ];
+                    continue;
+                }
+
+                // === Atualiza status no banco ===
+                $atualizacao = ['status' => 'enviado'];
+                if (isset($resposta['key']['id'])) {
+                    $atualizacao['id_mensagem'] = $resposta['key']['id'];
+                }
+
+                $mensagem->update($atualizacao);
+
+                $resultados[] = [
+                    'arquivo' => $fileName,
+                    'status' => 'enviado',
+                    'id_mensagem' => $resposta['key']['id'] ?? null
+                ];
+            } catch (\Throwable $e) {
+                $resultados[] = [
+                    'arquivo' => $arquivo->getClientOriginalName(),
+                    'status' => 'erro',
+                    'mensagem' => $e->getMessage()
+                ];
+            }
         }
-    
-        // SALVAR NO BANCO
-        Mensagem::create([
-            'numero_cliente' => $numero,
-            'tipo_de_mensagem' => $request->mediatype,
-            'mensagem_enviada' => $caminhoParaBanco, // agora salvo no formato certo
-            'data_e_hora_envio' => now(),
-            'enviado_por_mim' => true,
-            'usuario_id' => auth()->id(),
-            'bot' => false,
-        ]);
-    
+
         return response()->json([
-            'status' => 'Mídia enviada com sucesso!',
-            'resposta' => $resposta
+            'status' => 'finalizado',
+            'resultados' => $resultados
         ]);
     }
-    
+
     public function apagarMensagemParaTodos(Request $request)
     {
         $validated = $request->validate([

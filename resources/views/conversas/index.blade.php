@@ -224,10 +224,6 @@
                     <!-- Picker container -->
                     <div id="emojiPicker" class="hidden" style="position:absolute; bottom:60px; left:20px; z-index:999;">
                     </div>
-
-
-
-
                     <!-- Botão + com menu dentro -->
                     <div class="relative">
                         <button id="btnAdicionar" class="text-gray-500 hover:text-gray-700">
@@ -256,7 +252,7 @@
                                     </button>
                                 </li>
                             </ul>
-                            <input type="file" id="inputFotoVideo" accept="image/*,video/*" style="display:none;">
+                            <input type="file" id="inputFotoVideo" accept="image/*,video/*" multiple style="display:none;">
                             <input type="file" id="inputAudio" accept="audio/*" style="display:none;">
                             <input type="file" id="inputDocumento" accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.zip"
                                 style="display:none;">
@@ -312,24 +308,24 @@
 
 
 <!-- Modal de Preview -->
-<div id="modalPreview" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-4 space-y-4 relative">
+<div id="modalPreview" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center px-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full p-6 space-y-5 relative">
 
         <!-- Botão fechar -->
-        <button id="fecharModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        <button id="fecharModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
 
-        <h2 class="text-lg font-bold text-gray-800">Pré-visualizar envio</h2>
+        <h2 class="text-xl font-bold text-gray-800">Pré-visualizar envio</h2>
 
         <!-- Preview com spinner -->
-        <div id="previewMidiaContainer" class="relative flex justify-center items-center bg-gray-100 p-4 rounded-lg max-h-60 overflow-auto">
-            <div id="spinnerPreview" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+        <div id="previewMidiaContainer" class="relative bg-gray-100 p-4 rounded-lg max-h-[300px] overflow-x-auto">
+            <div id="spinnerPreview" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
                 <svg class="animate-spin h-6 w-6 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
             </div>
 
-            <div id="previewMidia" class="w-full flex justify-center items-center"></div>
+            <div id="previewMidia" class="flex overflow-x-auto space-x-4 p-2"></div>
         </div>
 
         <input type="text" id="legendaMidia" placeholder="Escreva uma legenda (opcional)" class="w-full border rounded px-3 py-2 text-sm">
@@ -337,6 +333,14 @@
         <button id="confirmarEnvio" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full">Enviar</button>
     </div>
 </div>
+
+<div id="modalViewPreview" class="fixed inset-0 bg-black bg-opacity-80 hidden z-50 flex items-center justify-center px-4">
+    <button id="fecharPreviewView" class="absolute top-4 right-4 text-white text-3xl">&times;</button>
+    <button id="prevPreview" class="absolute left-4 text-white text-2xl">&larr;</button>
+    <button id="nextPreview" class="absolute right-4 text-white text-2xl">&rarr;</button>
+    <div id="previewContent" class="max-w-3xl w-full flex justify-center items-center"></div>
+</div>
+
 
 <div id="modalViewMedia" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-4 relative space-y-4">
@@ -382,9 +386,6 @@
         <input type="hidden" id="idMensagemEditar">
     </div>
 </div>
-
-
-
     <script>
         window.ROTA_ENVIAR_MENSAGEM = "{{ route('kanban.enviar-mensagem') }}";
         window.CSRF_TOKEN = "{{ csrf_token() }}";
@@ -452,4 +453,5 @@ function filtrarContatosPorStatus(status) {
 
 
     </script>
+    <div id="toastContainer" class="fixed bottom-4 right-4 space-y-2 z-[9999]"></div>
 @endsection

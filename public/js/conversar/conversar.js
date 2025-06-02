@@ -452,15 +452,29 @@ document.addEventListener('click', (e) => {
 atualizarBorda();
 
 // ------------------- ANEXOS -------------------
+
+function handleMultiplosArquivos(event, tipo) {
+    const files = Array.from(event.target.files);
+
+    if (files.length > 5) {
+        showToast('O número máximo de mídias por envio é 5.');
+        event.target.value = ''; // limpa a seleção
+        return;
+    }
+
+    arquivosSelecionados = files;
+    abrirModalPreviewMultiplos(files);
+}
+
 document.getElementById('btnAnexarFotoVideo').addEventListener('click', () => document.getElementById('inputFotoVideo').click());
 document.getElementById('btnAnexarAudio').addEventListener('click', () => document.getElementById('inputAudio').click());
 document.getElementById('btnAnexarDocumento').addEventListener('click', () => document.getElementById('inputDocumento').click());
 
-document.getElementById('inputFotoVideo').addEventListener('change', e => handleFile(e, e.target.files[0].type.startsWith('video/') ? 'video' : 'image'));
+document.getElementById('inputFotoVideo').addEventListener('change', e => handleMultiplosArquivos(e, 'fotoVideo'));
 document.getElementById('inputAudio').addEventListener('change', e => handleFile(e, 'audio'));
 document.getElementById('inputDocumento').addEventListener('change', e => handleFile(e, 'document'));
 
-let arquivoSelecionado = null;
+let arquivosSelecionados = [];
 let tipoSelecionado = null;
 const modal = document.getElementById('modalPreview');
 const previewMidia = document.getElementById('previewMidia');
@@ -474,110 +488,244 @@ function handleFile(event, tipo) {
     abrirModalPreview(file, tipo);
 }
 
-function abrirModalPreview(file, tipo) {
-    arquivoSelecionado = file;
-    tipoSelecionado = tipo;
+function removerArquivoSelecionado(index) {
+    arquivosSelecionados.splice(index, 1);
+    abrirModalPreviewMultiplos(arquivosSelecionados);
+}
+
+let midiasPreview = [];
+let midiaPreviewIndex = 0;
+
+
+function abrirModalPreviewMultiplos(files) {
     legendaMidia.value = '';
     previewMidia.innerHTML = '';
-
     document.getElementById('spinnerPreview').classList.remove('hidden');
 
-    const url = URL.createObjectURL(file);
-    let midiaElement = null;
+    previewMidia.className = 'flex overflow-x-auto space-x-4 p-2 max-w-full';
+    midiasPreview = arquivosSelecionados; // Atualiza lista para o modo visualização
 
-    if (tipo === 'image') {
-        midiaElement = document.createElement('img');
-        midiaElement.src = url;
-        midiaElement.classList.add('max-h-56', 'rounded', 'mx-auto');
+    files.forEach((file, index) => {
+        const url = URL.createObjectURL(file);
+        const tipo = file.type.startsWith('image/') ? 'image'
+                    : file.type.startsWith('video/') ? 'video'
+                    : file.type.startsWith('audio/') ? 'audio'
+                    : 'document';
 
-    } else if (tipo === 'video') {
-        midiaElement = document.createElement('video');
-        midiaElement.src = url;
-        midiaElement.controls = true;
-        midiaElement.classList.add('max-h-56', 'rounded', 'mx-auto');
+        let elementoHTML = '';
 
-    } else if (tipo === 'audio') {
-        midiaElement = document.createElement('audio');
-        midiaElement.src = url;
-        midiaElement.controls = true;
-        midiaElement.classList.add('w-full');
+        if (tipo === 'image') {
+            elementoHTML = `<img src="${url}" class="h-28 w-28 object-cover rounded-lg">`;
+        } else if (tipo === 'video') {
+            elementoHTML = `<video src="${url}" class="h-28 w-28 object-cover rounded-lg" muted></video>`;
+        } else if (tipo === 'audio') {
+            elementoHTML = `
+                <div class="w-28 h-28 flex flex-col items-center justify-center bg-gray-200 rounded-lg text-gray-600">
+                    <i class="bi bi-mic-fill text-2xl mb-1"></i>
+                    <span class="text-xs text-center">Áudio</span>
+                </div>`;
+        } else {
+            elementoHTML = `
+                <div class="w-28 h-28 flex flex-col items-center justify-center bg-gray-100 rounded-lg text-gray-600">
+                    <i class="bi bi-file-earmark-text text-2xl mb-1"></i>
+                    <span class="text-xs text-center break-words px-1">${file.name}</span>
+                </div>`;
+        }
 
-    } else {
-        const icon = document.createElement('div');
-        icon.classList.add('text-6xl', 'text-gray-400');
-        icon.innerHTML = '<i class="bi bi-file-earmark-text"></i>';
-        previewMidia.appendChild(icon);
+        const card = document.createElement('div');
+        card.className = "relative flex-shrink-0 cursor-pointer";
+        card.setAttribute('data-index', index);
+        card.onclick = () => abrirVisualizacaoIndividual(index);
 
-        const nome = document.createElement('p');
-        nome.textContent = file.name;
-        nome.classList.add('text-sm', 'mt-2', 'text-center');
-        previewMidia.appendChild(nome);
+        card.innerHTML = `
+            <div class="relative shadow rounded-lg overflow-hidden group">
+                ${elementoHTML}
+                <button onclick="event.stopPropagation(); removerArquivoSelecionado(${index})"
+                    class="absolute top-1 right-1 bg-white/80 hover:bg-red-500 hover:text-white text-gray-700 rounded-full p-1 transition text-xs">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        `;
 
-        document.getElementById('spinnerPreview').classList.add('hidden');
-        modal.classList.remove('hidden');
-        legendaMidia.focus();
-        return;
-    }
+        previewMidia.appendChild(card);
+    });
 
-    // Adiciona na tela
-    previewMidia.appendChild(midiaElement);
     modal.classList.remove('hidden');
-    legendaMidia.focus(); // FOCO NO INPUT
+    legendaMidia.focus();
 
-    // Força um delay de 200ms para sumir o spinner (garante que vai funcionar)
     setTimeout(() => {
         document.getElementById('spinnerPreview').classList.add('hidden');
     }, 200);
 }
 
+function abrirVisualizacaoIndividual(index) {
+    midiaPreviewIndex = index;
+    const file = arquivosSelecionados[index];
+    const url = URL.createObjectURL(file);
+    const tipo = file.type.startsWith('image/') ? 'image'
+                : file.type.startsWith('video/') ? 'video'
+                : file.type.startsWith('audio/') ? 'audio'
+                : 'document';
+
+    const content = document.getElementById('previewContent');
+    content.innerHTML = '';
+
+    let el;
+    if (tipo === 'image') {
+        el = document.createElement('img');
+        el.src = url;
+        el.className = 'max-h-[80vh] rounded-lg';
+    } else if (tipo === 'video') {
+        el = document.createElement('video');
+        el.src = url;
+        el.controls = true;
+        el.className = 'max-h-[80vh] rounded-lg bg-black';
+    } else if (tipo === 'audio') {
+        el = document.createElement('audio');
+        el.src = url;
+        el.controls = true;
+        el.className = 'w-full';
+    } else {
+        el = document.createElement('div');
+        el.innerHTML = `<i class="bi bi-file-earmark-text text-6xl text-white"></i><p class="text-white mt-2">${file.name}</p>`;
+        el.className = 'text-center';
+    }
+
+    content.appendChild(el);
+    document.getElementById('modalViewPreview').classList.remove('hidden');
+}
+
+
+document.getElementById('fecharPreviewView').onclick = () => {
+    document.getElementById('modalViewPreview').classList.add('hidden');
+};
+
+document.getElementById('prevPreview').onclick = () => {
+    if (midiaPreviewIndex > 0) abrirVisualizacaoIndividual(midiaPreviewIndex - 1);
+};
+
+document.getElementById('nextPreview').onclick = () => {
+    if (midiaPreviewIndex < arquivosSelecionados.length - 1) abrirVisualizacaoIndividual(midiaPreviewIndex + 1);
+};
+
 
 btnFecharModal.addEventListener('click', () => modal.classList.add('hidden'));
 
+function showToast(mensagem, tipo = 'erro') {
+    const toast = document.createElement('div');
+    toast.className = `px-4 py-3 rounded shadow text-white text-sm transition-opacity duration-300 ${
+        tipo === 'erro' ? 'bg-red-600' : 'bg-green-600'
+    }`;
+
+    toast.innerText = mensagem;
+
+    const container = document.getElementById('toastContainer');
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+
 btnConfirmarEnvio.addEventListener('click', () => {
-    if (!arquivoSelecionado) return;
+    if (!arquivosSelecionados.length) return;
 
-    const formData = new FormData();
-    formData.append('numero', numeroAtualSelecionado);
-    formData.append('arquivo', arquivoSelecionado);
-    formData.append('mediatype', tipoSelecionado);
-    formData.append('caption', legendaMidia.value);
+    modal.classList.add('hidden');
+    const mensagensDiv = document.getElementById('mensagens-chat');
 
-    fetch("/api/evolution/enviar-midia", {
+    // Exibir no chat cada card com "enviando..."
+    arquivosSelecionados.forEach(arquivo => {
+        const tipo = arquivo.type.startsWith('image/') ? 'image'
+                   : arquivo.type.startsWith('video/') ? 'video'
+                   : arquivo.type.startsWith('audio/') ? 'audio'
+                   : 'document';
+
+        const url = URL.createObjectURL(arquivo);
+
+        let mediaHTML = '';
+        if (tipo === 'image') {
+            mediaHTML = `<img src="${url}" class="max-w-[200px] max-h-[200px] rounded-lg">`;
+        } else if (tipo === 'video') {
+            mediaHTML = `<video src="${url}" controls class="max-w-[200px] rounded-lg"></video>`;
+        } else if (tipo === 'audio') {
+            mediaHTML = `<audio src="${url}" controls class="w-full"></audio>`;
+        } else {
+            mediaHTML = `<div class="flex items-center gap-2 text-gray-700 text-sm">
+                            <i class="bi bi-file-earmark-text text-xl"></i> ${arquivo.name}
+                         </div>`;
+        }
+
+        const card = `
+            <div class="flex justify-end mb-2">
+                <div class="bg-[#D9FDD3] rounded-2xl p-3 max-w-[80%] text-sm shadow">
+                    ${mediaHTML}
+                    <small class="block text-xs text-gray-500 mt-2">enviando...</small>
+                </div>
+            </div>
+        `;
+
+        mensagensDiv.insertAdjacentHTML('beforeend', card);
+    });
+
+    document.getElementById('chat-mensagens')?.scrollTo(0, mensagensDiv.scrollHeight);
+
+    // Enviar um por um
+    arquivosSelecionados.forEach(arquivo => {
+        const tipo = arquivo.type.startsWith('image/') ? 'image'
+                   : arquivo.type.startsWith('video/') ? 'video'
+                   : arquivo.type.startsWith('audio/') ? 'audio'
+                   : 'document';
+
+        const formData = new FormData();
+        formData.append('numero', numeroAtualSelecionado);
+        formData.append('caption', legendaMidia.value);
+        formData.append('mediatype', tipo);
+        formData.append('arquivos[]', arquivo);
+
+        fetch("/api/evolution/enviar-midia", {
             method: "POST",
             headers: { "X-CSRF-TOKEN": window.CSRF_TOKEN },
             body: formData
-        }).then(res => res.json())
-        .then(() => {
-            modal.classList.add('hidden');
+        })
+        .then(res => res.json())
+        .then(data => {
             carregarNovasMensagens();
+
+            if (data?.resultados) {
+                data.resultados.forEach(res => {
+                    const sucesso = res.status === 'enviado';
+
+                    const toast = document.createElement('div');
+                    toast.className = `px-4 py-2 rounded shadow text-sm flex items-center gap-2 animate-fadeInDown ${
+                        sucesso ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                    }`;
+
+                    toast.innerHTML = `
+                        <i class="bi ${sucesso ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} text-lg"></i>
+                        <div>
+                            <strong>${res.arquivo}</strong><br>
+                            ${sucesso ? 'Enviado com sucesso!' : `Erro: ${res.mensagem}`}
+                        </div>
+                    `;
+
+                    document.getElementById('toastContainer').appendChild(toast);
+                    setTimeout(() => toast.remove(), 4000);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao enviar mídia:', error);
+            alert('Erro ao enviar uma das mídias. Verifique sua conexão e tente novamente.');
         });
+    });
+
+    arquivosSelecionados = [];
+    document.getElementById('inputFotoVideo').value = '';
 });
 
-const btnEmoji = document.getElementById('btnEmoji');
 const emojiPickerContainer = document.getElementById('emojiPicker');
-const inputMensagemEmoji = document.getElementById('input-mensagem');
-
-// Toggle do picker
-btnEmoji.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (emojiPickerContainer.classList.contains('hidden')) {
-        emojiPickerContainer.classList.remove('hidden');
-        emojiPickerContainer.innerHTML = '';
-
-        const picker = new EmojiMart.Picker({
-            onEmojiSelect: (emoji) => {
-                insertEmoji(emoji.native);
-                // NÃO FECHA MAIS AO ESCOLHER O EMOJI
-            },
-            set: 'apple',
-            locale: 'pt'
-        });
-
-        emojiPickerContainer.appendChild(picker);
-    } else {
-        emojiPickerContainer.classList.add('hidden');
-    }
-});
 
 // Fechar ao clicar fora
 document.addEventListener('click', (e) => {
