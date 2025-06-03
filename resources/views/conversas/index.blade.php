@@ -120,6 +120,19 @@
         #lista-contatos-itens::-webkit-scrollbar-track {
             background-color: #f1f1f1;
         }
+        #dropzoneArquivos.dragover {
+            background-color: #fff7ed;
+            border-color: #fb923c;
+            color: #fb923c;
+        }
+#dropzoneArquivos {
+    pointer-events: none;
+    z-index: 50;
+}
+#dropzoneArquivos.dragover {
+    pointer-events: auto;
+}
+
     </style>
 
     <div class="flex h-[calc(100vh-70px)] bg-gray-100">
@@ -159,10 +172,8 @@
         <input type="text" id="pesquisa-contato" onkeyup="filtrarContatos()" placeholder="Buscar número..."
             class="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400">
         <i class="bi bi-search absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
     </div>
-</div>
-
-
             <!-- Lista de Contatos -->
             <div class="flex-1 overflow-y-auto overflow-x-hidden " id="lista-contatos-itens">
                
@@ -175,18 +186,23 @@
                 <h2 id="titulo-contato" class="text-lg font-bold text-gray-700">Selecione uma conversa</h2>
             </div>
 
+                <!-- Dropzone fora da substituição -->
+    <div id="dropzoneArquivos"
+        class="pointer-events-none absolute inset-0 z-50 bg-white/80 border-4 border-dashed border-orange-400 rounded-lg hidden items-center justify-center text-center text-orange-500 font-semibold text-sm">
+        Solte seus arquivos aqui para enviar <i class="bi bi-paperclip"></i>
+    </div>
             <div id="chat-mensagens" class="flex-1 overflow-y-auto p-6 relative">
-                <div id="mensagem-inicial"
-                    class="flex flex-col items-center justify-center h-full text-center text-gray-400">
+
+                <!-- Mensagem inicial -->
+                <div id="mensagem-inicial" class="flex flex-col items-center justify-center h-full text-center text-gray-400">
                     <i class="bi bi-chat-dots text-5xl text-orange-400 mb-4"></i>
                     <p class="text-lg font-semibold">Nenhuma conversa aberta</p>
                     <p class="text-sm text-gray-500">Selecione um contato ao lado para começar</p>
                 </div>
-                <div id="mensagens-chat" class="space-y-4 hidden">
-                    
-                </div>
-            </div>
 
+                <!-- Esse aqui é substituído dinamicamente -->
+                <div id="mensagens-chat" class="space-y-4 hidden"></div>
+            </div>
             <!-- Bloco de resposta ativa -->
             <div id="respostaAtiva" class="hidden px-6 py-2 bg-white border-t border-b border-gray-200">
                 <div class="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2 shadow-sm">
@@ -201,7 +217,6 @@
             </div>
 
             <div id="area-input" class="flex items-center gap-3 p-4 border-t bg-white hidden">
-
                 <!-- Caixa de Mensagem com ícones dentro -->
                 <div class="flex items-end border rounded-full px-4 py-2 bg-gray-100 flex-1 space-x-3 barra-input relative">
 

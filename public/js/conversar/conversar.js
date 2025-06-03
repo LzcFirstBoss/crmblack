@@ -986,3 +986,53 @@ function filtrarContatos() {
 
             aplicarFiltros();
         }
+
+
+// Drop de arquivos
+    const dropzone = document.getElementById('dropzoneArquivos');
+
+    // Ativa dropzone ao arrastar qualquer coisa
+    document.addEventListener('dragenter', e => {
+        e.preventDefault();
+        dropzone.classList.remove('hidden');
+        dropzone.classList.add('flex', 'dragover');
+    });
+
+    // Mantém a área ativa enquanto arrasta
+    document.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+    });
+
+    // Oculta se sair da tela
+    document.addEventListener('dragleave', e => {
+        if (e.target === document.body || e.clientY <= 0) {
+            dropzone.classList.remove('dragover', 'flex');
+            dropzone.classList.add('hidden');
+        }
+    });
+
+    // Captura drop final
+    dropzone.addEventListener('drop', e => {
+    console.log('📎 Drop detectado!');
+
+    e.preventDefault();
+    dropzone.classList.remove('dragover', 'flex');
+    dropzone.classList.add('hidden');
+
+    // Bloqueia se nenhuma conversa estiver ativa
+    if (document.getElementById('mensagens-chat').classList.contains('hidden')) return;
+
+    const arquivos = Array.from(e.dataTransfer.files);
+    const temImagemOuVideo = arquivos.some(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+    const temAudio = arquivos.some(f => f.type.startsWith('audio/'));
+    const temDocumento = arquivos.some(f => f.type.match(/pdf|doc|docx|txt|xlsx|xls|zip/));
+
+    let tipo = 'document';
+    if (temImagemOuVideo) tipo = 'fotoVideo';
+    else if (temAudio) tipo = 'audio';
+    else if (temDocumento) tipo = 'document';
+
+    const fakeEvent = { target: { files: arquivos } };
+    handleMultiplosArquivos(fakeEvent, tipo);
+});
