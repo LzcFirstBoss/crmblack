@@ -505,8 +505,9 @@ document.getElementById('btnAnexarAudio').addEventListener('click', () => docume
 document.getElementById('btnAnexarDocumento').addEventListener('click', () => document.getElementById('inputDocumento').click());
 
 document.getElementById('inputFotoVideo').addEventListener('change', e => handleMultiplosArquivos(e, 'fotoVideo'));
-document.getElementById('inputAudio').addEventListener('change', e => handleFile(e, 'audio'));
-document.getElementById('inputDocumento').addEventListener('change', e => handleFile(e, 'document'));
+document.getElementById('inputAudio').addEventListener('change', e => handleMultiplosArquivos(e, 'audio'));
+document.getElementById('inputDocumento').addEventListener('change', e => handleMultiplosArquivos(e, 'document'));
+
 
 let arquivosSelecionados = [];
 let tipoSelecionado = null;
@@ -782,8 +783,6 @@ function abrirModalMedia(index) {
         audio.controls = true;
         audio.classList.add("w-full", "rounded");
         content.appendChild(audio);
-
-        // Tentar dar autoplay após adicionar no DOM
         setTimeout(() => audio.play().catch(() => {}), 100);
     } else if (item.type === 'video') {
         const video = document.createElement('video');

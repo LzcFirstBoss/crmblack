@@ -10,7 +10,6 @@
     <link rel="icon" href="{{ asset('img/zabulon/logopretalaranja.svg') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/emoji-mart@5.4.0/css/emoji-mart.css" />
-    <script src="https://cdn.jsdelivr.net/npm/emoji-mart@5.4.0/dist/browser.js"></script>
 </head>
 <style>
     /* Seta do dropdown */
@@ -161,3 +160,5 @@
 <script src="{{ asset('js/notificacao/notificacao.js') }}"></script>
 <script src="{{ asset('js/menu/menu.js') }}"></script>
 <script src="https://unpkg.com/lottie-web@5.7.4/build/player/lottie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emoji-mart/data"></script>
