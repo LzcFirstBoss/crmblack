@@ -50,12 +50,13 @@
     @endif
 
     {{-- Balão de mensagem --}}
-    <div class="{{ $isMe ? 'order-2' : 'order-1' }} flex flex-col max-w-[65%] {{ $isMe ? 'items-end' : 'items-start' }}"
-         data-idmsg="{{ $msg->id }}"
-         data-texto="{{ e(Str::limit($msg->mensagem_enviada, 100)) }}"
-         data-numero="{{ $msg->numero_cliente }}"
-         id="mensagem-{{ $msg->id }}"
-         data-fromme="{{ $isMe ? 'true' : 'false' }}">
+   <div class="{{ $isMe ? 'order-2' : 'order-1' }} flex flex-col max-w-[65%] {{ $isMe ? 'items-end' : 'items-start' }}"
+     data-idmsg="{{ $msg->id }}"
+     data-idwhatsapp="{{ $msg->id_mensagem }}" 
+     data-texto="{{ e(Str::limit($msg->mensagem_enviada, 100)) }}"
+     data-numero="{{ $msg->numero_cliente }}"
+     id="mensagem-{{ $msg->id }}"
+     data-fromme="{{ $isMe ? 'true' : 'false' }}">
         <div class="msg relative group rounded-2xl text-[15px] shadow-lg font-normal leading-relaxed text-black px-4 min-w-[120px] w-fit"
              style="background-color: {{ $corHex }}; padding-top: 6px; padding-bottom: 4px;">
 
@@ -74,9 +75,27 @@
         <div class="text-xs font-semibold {{ $isMe ? 'text-right' : '' }} text-orange-500">
             {{ $resposta->enviado_por_mim ? 'Você' : 'Cliente' }}
         </div>
-        <div class="text-sm text-gray-700 truncate">
-            {{ Str::limit(strip_tags($resposta->mensagem_enviada), 100) }}
-        </div>
+        @php
+    $textoResposta = $resposta->mensagem_enviada;
+    $textoNormalizado = strtolower($textoResposta);
+
+    if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $textoNormalizado)) {
+        $textoResposta = 'Imagem';
+    } elseif (preg_match('/\.(mp3|ogg|wav|m4a|webm)$/i', $textoNormalizado)) {
+        $textoResposta = 'Áudio';
+    } elseif (preg_match('/\.(mp4|webm|mov)$/i', $textoNormalizado)) {
+        $textoResposta = 'Vídeo';
+    } elseif (preg_match('/\.(pdf|doc|docx|txt|xls|xlsx|zip|rar|csv)$/i', $textoNormalizado)) {
+        $textoResposta = 'Documento';
+    } else {
+        $textoResposta = Str::limit(strip_tags($textoResposta), 100);
+    }
+@endphp
+
+<div class="text-sm text-gray-700 truncate">
+    {{ $textoResposta }}
+</div>
+
     </div>
 @endif
 
@@ -116,13 +135,17 @@
                     @if ($ehImagem)
                         <img src="{{ $caminho }}" loading="lazy" alt="Imagem" class="rounded-xl max-w-xs preview-media">
                     @elseif ($ehAudio)
-                        <div class="custom-audio-player flex items-center gap-4 bg-white rounded-lg p-3 border border-gray-300">
-                            <button class="play-pause text-green-500 text-2xl"><i class="bi bi-play-fill"></i></button>
-                            <div class="progress-bar flex-1 bg-gray-200 rounded h-2 cursor-pointer">
-                                <div class="progress bg-green-500 h-2 rounded" style="width: 0%;"></div>
-                            </div>
-                            <div class="time text-sm text-gray-600">0:00 / 0:00</div>
-                        </div>
+                            <div class="media-clickable cursor-pointer"
+         data-type="audio"
+         data-src="{{ $caminho }}">
+        <div class="custom-audio-player flex items-center gap-4 bg-white rounded-lg p-3 border border-gray-300">
+            <button class="play-pause text-green-500 text-2xl"><i class="bi bi-play-fill"></i></button>
+            <div class="progress-bar flex-1 bg-gray-200 rounded h-2 cursor-pointer">
+                <div class="progress bg-green-500 h-2 rounded" style="width: 0%;"></div>
+            </div>
+            <div class="time text-sm text-gray-600">0:00 / 0:00</div>
+        </div>
+    </div>
                     @elseif ($ehVideo)
                         <video controls class="video-player w-full mt-2 rounded-xl bg-black">
                             <source src="{{ $caminho }}">

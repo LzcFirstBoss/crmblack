@@ -164,7 +164,7 @@ class EvolutionController extends Controller
                         'key' => [
                             'remoteJid' => $resposta['numero'] . '@s.whatsapp.net',
                             'fromMe' => $resposta['fromMe'] ?? false,
-                            'id' => $resposta['id']
+                            'id' => $resposta['idWhatsapp'] ?? $resposta['id']
                         ],
                         'message' => [
                             'conversation' => $resposta['texto']

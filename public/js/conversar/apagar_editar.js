@@ -113,12 +113,29 @@ function responderMensagem(idMensagem) {
     const msgEl = document.querySelector(`[data-idmsg='${idMensagem}']`);
     if (!msgEl) return;
 
-    const texto = msgEl.dataset.texto || 'Mensagem';
+    let texto = msgEl.dataset.texto || 'Mensagem';
     const numero = msgEl.dataset.numero || '';
     const fromMe = msgEl.dataset.fromme === 'true';
 
+    // Detecta se é mídia
+    const lowerTexto = texto.toLowerCase();
+
+    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(lowerTexto)) {
+        texto = '[Imagem]';
+    } else if (/\.(mp3|ogg|wav|m4a|webm)$/i.test(lowerTexto)) {
+        texto = '[Áudio]';
+    } else if (/\.(mp4|webm|mov)$/i.test(lowerTexto)) {
+        texto = '[Vídeo]';
+    } else if (/\.(pdf|doc|docx|txt|xls|xlsx|zip|rar|csv)$/i.test(lowerTexto)) {
+        texto = '[Documento]';
+    }
+
+    const idWhatsapp = msgEl.dataset.idwhatsapp || null;
+
+
     mensagemRespondida = {
         id: idMensagem,
+        idWhatsapp: idWhatsapp, // <- ESSENCIAL PARA O QUOTED FUNCIONAR NO WHATSAPP
         texto: texto,
         numero: numero,
         fromMe: fromMe
@@ -129,6 +146,7 @@ function responderMensagem(idMensagem) {
     document.getElementById('respostaTexto').textContent = texto;
     document.getElementById('respostaRemetente').textContent = fromMe ? 'Você' : 'Cliente';
 }
+
 
 function cancelarResposta() {
     mensagemRespondida = null;
