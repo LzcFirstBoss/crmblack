@@ -1036,3 +1036,25 @@ function filtrarContatos() {
     const fakeEvent = { target: { files: arquivos } };
     handleMultiplosArquivos(fakeEvent, tipo);
 });
+
+
+// scroll para o final
+const btnScrollFim = document.getElementById('btnScrollFim');
+    const chatMensagens = document.getElementById('chat-mensagens');
+
+    function scrollParaFimChat() {
+        chatMensagens.scrollTo({
+            top: chatMensagens.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+
+    chatMensagens.addEventListener('scroll', () => {
+        const estaNoFim = chatMensagens.scrollTop + chatMensagens.clientHeight >= chatMensagens.scrollHeight - 100;
+
+        if (!estaNoFim) {
+            btnScrollFim.classList.remove('hidden');
+        } else {
+            btnScrollFim.classList.add('hidden');
+        }
+    });

@@ -125,13 +125,17 @@
             border-color: #fb923c;
             color: #fb923c;
         }
-#dropzoneArquivos {
-    pointer-events: none;
-    z-index: 50;
-}
-#dropzoneArquivos.dragover {
-    pointer-events: auto;
-}
+        #dropzoneArquivos {
+            pointer-events: none;
+            z-index: 50;
+        }
+        #dropzoneArquivos.dragover {
+            pointer-events: auto;
+        }
+
+        #btnScrollFim {
+            transition: opacity 0.2s ease;
+        }
 
     </style>
 
@@ -203,6 +207,12 @@
                 <!-- Esse aqui é substituído dinamicamente -->
                 <div id="mensagens-chat" class="space-y-4 hidden"></div>
             </div>
+
+            <button id="btnScrollFim" onclick="scrollParaFimChat()"
+                class="hidden fixed bottom-28 right-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-3 shadow-lg z-40 transition">
+                <i class="bi bi-arrow-down-short text-2xl"></i>
+            </button>
+
             <!-- Bloco de resposta ativa -->
             <div id="respostaAtiva" class="hidden px-6 py-2 bg-white border-t border-b border-gray-200">
                 <div class="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2 shadow-sm">
