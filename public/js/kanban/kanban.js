@@ -39,6 +39,7 @@ socket.onmessage = (event) => {
 
         if (card && colunaDestino) {
             colunaDestino.appendChild(card);
+            reativarSortable();
         }
     }
 
@@ -253,28 +254,30 @@ function carregarKanban() {
 
 function reativarSortable() {
     document.querySelectorAll('.kanban-column').forEach(column => {
-        new Sortable(column, {
-            group: 'kanban',
-            animation: 150,
-            onEnd: function(evt) {
-                const id = evt.item.dataset.id;
-                const status = evt.to.id.replace('status-', '');
+if (!column.sortableInstance) {
+    column.sortableInstance = new Sortable(column, {
+        group: 'kanban',
+        animation: 150,
+        onEnd: function(evt) {
+            const id = evt.item.dataset.id;
+            const status = evt.to.id.replace('status-', '');
 
-                fetch('/kanban/atualizar-status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': window.csrfToken
-                    },
-                    body: JSON.stringify({ id, status })
-                });
+            fetch('/kanban/atualizar-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': window.csrfToken
+                },
+                body: JSON.stringify({ id, status })
+            });
 
-                socket.send(JSON.stringify({
-                    evento: 'kanban:moverCard',
-                    dados: { id, status }
-                }));
-            }
-        });
+            socket.send(JSON.stringify({
+                evento: 'kanban:moverCard',
+                dados: { id, status }
+            }));
+        }
+    });
+}
     });
 }
 
