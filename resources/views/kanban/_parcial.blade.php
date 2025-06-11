@@ -16,7 +16,7 @@
                 </div>
 
                 <!-- CARDS -->
-                <div class="kanban-column min-h-[200px] space-y-2 p-3" id="status-{{ $coluna->id }}">
+                <div class="kanban-column min-h-[550px] max-h-[550px] overflow-y-auto space-y-2 p-3" id="status-{{ $coluna->id }}">
                     @foreach ($mensagens[$coluna->id] ?? [] as $mensagem)
                         <div class="kanban-card" data-id="{{ $mensagem->id }}" data-numero="{{ $mensagem->numero_cliente }}">
                             <div class="kanban-card-header">

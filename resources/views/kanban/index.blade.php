@@ -50,6 +50,29 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
         }
+        .kanban-column::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.kanban-column::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.kanban-column::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.kanban-column::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.kanban-column {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
     </style>
     <!-- Modal Reutilizável -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
@@ -61,15 +84,17 @@
     </div>
 
     <div class="p-6">
-        <h1 class="text-2xl font-bold mb-6"><i class="bi bi-funnel-fill"></i> CRM - Zabulon</h1>
-        <div class="mb-6 flex items-center space-x-4">
-            <button onclick="abrirModalNovaLista()"
-                class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 whitespace-nowrap">
-                + Nova Lista
-            </button>
+        <div class="flex gap-10 items-center mb-6">
+            <h1 class="text-2xl font-bold"><i class="bi bi-funnel-fill"></i> CRM - Zabulon</h1>
+            <div class="flex items-center space-x-4">
+                <button onclick="abrirModalNovaLista()"
+                    class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 whitespace-nowrap">
+                    + Nova Lista
+                </button>
 
-            <input type="text" id="filtro-funil" placeholder="Pesquisar funil..."
-                class="w-64 p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:border-orange-400">
+                <input type="text" id="filtro-funil" placeholder="Pesquisar funil..."
+                    class="w-64 p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:border-orange-400">
+            </div>
         </div>
 
 
