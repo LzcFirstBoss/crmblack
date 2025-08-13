@@ -1,4 +1,4 @@
-# ---- Etapa 1: Composer (build) ----
+# ---------- BUILD (Composer) ----------
 FROM composer:2.7 AS build
 WORKDIR /app
 COPY composer.json composer.lock ./
@@ -6,36 +6,40 @@ RUN composer install --no-dev --prefer-dist --no-interaction --no-progress
 COPY . .
 RUN composer dump-autoload -o
 
-# ---- Etapa 2: Runtime (FrankenPHP = servidor + PHP) ----
-FROM dunglas/frankenphp:1.1-php8.2
-WORKDIR /app
+# ---------- RUNTIME (PHP-FPM + Nginx + Supervisor) ----------
+FROM php:8.2-fpm-alpine
 
-# Extensões necessárias do PHP
-RUN install-php-extensions \
-    pdo_mysql \
-    mbstring \
-    zip \
-    bcmath \
-    intl \
-    exif \
-    pcntl \
-    gd
+# Pacotes do sistema
+RUN apk add --no-cache bash git unzip nginx supervisor curl libpng-dev oniguruma-dev libzip-dev mariadb-client
 
-# Copia código e vendor
-COPY --from=build /app /app
+# Extensões PHP necessárias pro Laravel
+RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd
 
-# Permissões e caches
-RUN chown -R www-data:www-data /app && \
-    mkdir -p /app/storage /app/bootstrap/cache && \
-    chown -R www-data:www-data /app/storage /app/bootstrap/cache && \
-    php artisan storage:link || true && \
+# Composer (copiado do estágio build)
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Código da aplicação (com vendor já pronto do build)
+WORKDIR /var/www
+COPY --from=build /app /var/www
+
+# Nginx config
+COPY deploy/nginx.conf /etc/nginx/http.d/default.conf
+
+# Supervisor config
+COPY deploy/supervisord.conf /etc/supervisord.conf
+
+# Permissões
+RUN chown -R www-data:www-data /var/www && \
+    mkdir -p /var/www/storage /var/www/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+# Otimizações Laravel (não falha se variáveis ainda não estiverem setadas)
+RUN php artisan storage:link || true && \
     php artisan config:clear || true && \
-    php artisan config:cache || true && \
-    php artisan route:cache || true && \
-    php artisan view:cache || true
+    php artisan route:clear || true && \
+    php artisan view:clear || true
 
-# FrankenPHP escuta nesta porta
-ENV SERVER_NAME=:80
 EXPOSE 80
 
-CMD ["php", "artisan", "octane:frankenphp", "--workers=4", "--max-requests=1000"]
+# Sobe Nginx + PHP-FPM
+CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]
