@@ -16,7 +16,7 @@
                 <img src="{{ asset('img/zabulon/logopretalaranja.svg') }}" alt="Logo Zabulon" class="h-16">
             </div>
 
-            <p class="text-gray-600 text-center mb-6">Acesse o painel administrativo da Zabulon</p>
+            <p class="text-gray-600 text-center mb-6">Acesse o painel administrativo da mip</p>
 
             @if(session('error'))
                 <p class="text-red-600 text-sm mb-4 text-center">{{ session('error') }}</p>
